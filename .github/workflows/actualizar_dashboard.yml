@@ -1,52 +1,29 @@
 name: Actualizar Dashboard
-
 on:
   repository_dispatch:
     types: [actualizar-dashboard]
   workflow_dispatch:
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
     permissions:
       contents: write
-
     steps:
-      - name: Checkout repositorio
-        uses: actions/checkout@v4.2.2
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5.6.0
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
         with:
           python-version: "3.11"
-
-      - name: Instalar dependencias
-        run: pip install pandas openpyxl
-
-      - name: Descargar TXN_LM_CP.xlsx desde datos-cp
+      - run: pip install pandas openpyxl
+      - name: Descargar datos
         run: |
-          DOWNLOAD_URL=$(curl -s \
-            -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" \
-            "https://api.github.com/repos/lokal-money/datos-cp/contents/TXN_LM_CP.xlsx" \
-            | python3 -c "import sys,json; print(json.load(sys.stdin)['download_url'])")
-          curl -L \
-            -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" \
-            "$DOWNLOAD_URL" \
-            -o TXN_LM_CP.xlsx
-          echo "Descargado: $(du -sh TXN_LM_CP.xlsx)"
-
-      - name: Procesar datos y regenerar dashboard
-        run: python procesar_datos.py TXN_LM_CP.xlsx "BAJA ALLIANCE " "UTC-6"
-
-      - name: Limpiar archivo de datos
-        run: rm -f TXN_LM_CP.xlsx
-
-      - name: Commit index.html actualizado
-        run: |
-          git config user.name  "github-actions[bot]"
+          DOWNLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" "https://api.github.com/repos/lokal-money/datos-cp/contents/TXN_LM_CP.xlsx" | python3 -c "import sys,json; print(json.load(sys.stdin)['download_url'])")
+          curl -L -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" "$$DOWNLOAD_URL" -o TXN_LM_CP.xlsx
+      - run: python procesar_datos.py TXN_LM_CP.xlsx "BAJA ALLIANCE " "UTC-6" "${{ secrets.DASHBOARD_PASSWORD }}"
+      - run: rm -f TXN_LM_CP.xlsx
+      - run: |
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet || git commit -m "Dashboard actualizado $(date +'%Y-%m-%d %H:%M UTC')"
