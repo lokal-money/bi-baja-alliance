@@ -19,7 +19,7 @@ jobs:
       - name: Descargar datos
         run: |
           DOWNLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" "https://api.github.com/repos/lokal-money/datos-cp/contents/TXN_LM_CP.xlsx" | python3 -c "import sys,json; print(json.load(sys.stdin)['download_url'])")
-          curl -L -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" "$$DOWNLOAD_URL" -o TXN_LM_CP.xlsx
+          curl -L -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" "$DOWNLOAD_URL" -o TXN_LM_CP.xlsx
       - run: python procesar_datos.py TXN_LM_CP.xlsx "BAJA ALLIANCE " "UTC-6" "${{ secrets.DASHBOARD_PASSWORD }}"
       - run: rm -f TXN_LM_CP.xlsx
       - run: |
