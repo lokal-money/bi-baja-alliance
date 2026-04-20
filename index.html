@@ -442,8 +442,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
         <button class="qbtn" onclick="quickSet(0,this)">Hoy</button>
         <button class="qbtn" onclick="quickSet(-1,this)">Ayer</button>
         <button class="qbtn" onclick="quickSet(7,this)">7d</button>
-        <button class="qbtn" onclick="quickSet(14,this)">14d</button>
-        <button class="qbtn active" onclick="quickSet(999,this)">Todo</button>
+        <button class="qbtn" onclick="quickSet('mes_actual',this)">Mes actual</button>
+        <button class="qbtn" onclick="quickSet('mes_anterior',this)">Mes anterior</button>
+        <button class="qbtn active" onclick="quickSet('ytd',this)">2026</button>
       </div>
     </div>
   </div>
@@ -742,44 +743,75 @@ function getFiltered() {
 
 // ── QUICK BUTTONS ─────────────────────────────────────────────
 function todayPT() {
-  return new Date().toLocaleDateString('en-CA', {timeZone: 'America/Los_Angeles'});
+  return new Date().toLocaleDateString('en-CA', {timeZone: 'America/Mexico_City'});
 }
 
 function yesterdayPT() {
   const y = new Date();
   y.setDate(y.getDate() - 1);
-  return y.toLocaleDateString('en-CA', {timeZone: 'America/Los_Angeles'});
+  return y.toLocaleDateString('en-CA', {timeZone: 'America/Mexico_City'});
 }
 
-function quickSet(days, btn) {
+function quickSet(mode, btn) {
   document.querySelectorAll('.qbtn').forEach(b => b.classList.remove('active'));
   (btn || event.target).classList.add('active');
+
   const allDates = [...new Set(RAW.map(r=>r.date).filter(d => typeof d === 'string' && d.length === 10))].sort();
   const first = allDates[0];
   const last  = allDates[allDates.length-1];
   let from, to, fallbackNote = null;
 
-  if (days === 0) {          // Hoy
+  // Helper: current date in CDMX time
+  const nowPT = () => new Date(new Date().toLocaleString('en-US', {timeZone:'America/Mexico_City'}));
+
+  if (mode === 0) {              // Hoy
     const today = todayPT();
-    if (allDates.includes(today)) {
-      from = to = today;
-    } else {
-      from = to = last;  // fallback al último día disponible
-      fallbackNote = `Sin datos para hoy — mostrando último día disponible: ${_fmtDateShort(last)}`;
-    }
-  } else if (days === -1) {  // Ayer
+    if (allDates.includes(today)) { from = to = today; }
+    else { from = to = last; fallbackNote = `Sin datos para hoy — mostrando último día disponible: ${_fmtDateShort(last)}`; }
+
+  } else if (mode === -1) {      // Ayer
     const yesterday = yesterdayPT();
-    if (allDates.includes(yesterday)) {
-      from = to = yesterday;
-    } else {
-      // fallback al penúltimo día disponible
+    if (allDates.includes(yesterday)) { from = to = yesterday; }
+    else {
       from = to = allDates.length >= 2 ? allDates[allDates.length - 2] : last;
       fallbackNote = `Sin datos para ayer — mostrando día anterior disponible: ${_fmtDateShort(from)}`;
     }
-  } else if (days >= 999) {  // Todo
-    from = first; to = last;
-  } else {
-    from = allDates[Math.max(0, allDates.length - days)]; to = last;
+
+  } else if (mode === 7) {       // Últimos 7 días
+    from = allDates[Math.max(0, allDates.length - 7)]; to = last;
+
+  } else if (mode === 'mes_actual') {
+    const now = nowPT();
+    const y = now.getFullYear(), m = now.getMonth();
+    const firstOfMonth = `${y}-${String(m+1).padStart(2,'0')}-01`;
+    const lastOfMonth  = new Date(y, m+1, 0);
+    const lastStr = `${lastOfMonth.getFullYear()}-${String(lastOfMonth.getMonth()+1).padStart(2,'0')}-${String(lastOfMonth.getDate()).padStart(2,'0')}`;
+    from = firstOfMonth;
+    to   = lastStr < last ? lastStr : last;
+    if (!allDates.some(d => d >= from && d <= to)) {
+      fallbackNote = `Sin datos para el mes actual`;
+    }
+
+  } else if (mode === 'mes_anterior') {
+    const now = nowPT();
+    const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const y = prevMonth.getFullYear(), m = prevMonth.getMonth();
+    const firstOfPrev = `${y}-${String(m+1).padStart(2,'0')}-01`;
+    const lastOfPrev  = new Date(y, m+1, 0);
+    from = firstOfPrev;
+    to   = `${lastOfPrev.getFullYear()}-${String(lastOfPrev.getMonth()+1).padStart(2,'0')}-${String(lastOfPrev.getDate()).padStart(2,'0')}`;
+    if (!allDates.some(d => d >= from && d <= to)) {
+      fallbackNote = `Sin datos para el mes anterior`;
+    }
+
+  } else if (mode === 'ytd') {   // Year to Date 2026
+    const now = nowPT();
+    const year = now.getFullYear();
+    from = `${year}-01-01`;
+    to   = last;
+    if (!allDates.some(d => d >= from)) {
+      fallbackNote = `Sin datos para ${year}`;
+    }
   }
 
   document.getElementById('dateFrom').value = from;
@@ -992,6 +1024,82 @@ function render() {
   document.getElementById('statusDonutLegend').innerHTML = Object.entries(statGroups).map(([k,v])=>`
     <div class="legend-item"><div class="legend-dot" style="background:${STATUS_COLORS[k]}"></div><span>${statLabels[k]}</span><span class="legend-pct" style="color:${STATUS_COLORS[k]}">${pct(v,total)}</span></div>`).join('');
 
+  // ── CARD ENTRY MODE ─────────────────────────────────────────────
+  const entryMap = {};
+  confirmed.forEach(r => {
+    const mode = r.card_entry_mode || 'No disponible';
+    if (!entryMap[mode]) entryMap[mode] = {count:0, gross:0};
+    entryMap[mode].count++;
+    entryMap[mode].gross += r.transaction_amount;
+  });
+  const entryColors = {'CONTACTLESS':PALETTE.teal,'CHIP':PALETTE.blue,'No disponible':PALETTE.muted};
+  const entryLabels_es = {'CONTACTLESS':'Contactless','CHIP':'Chip','No disponible':'No disponible'};
+
+  destroyChart('entryDonut');
+  const entryEntries = Object.entries(entryMap).filter(([k]) => k !== 'No disponible').sort((a,b)=>b[1].gross-a[1].gross);
+  if (entryEntries.length > 0) {
+    charts.entryDonut = new Chart(document.getElementById('entryDonut'), {
+      type: 'doughnut',
+      data: {
+        labels: entryEntries.map(([k]) => entryLabels_es[k] || k),
+        datasets: [{
+          data: entryEntries.map(([,v]) => v.gross),
+          backgroundColor: entryEntries.map(([k]) => entryColors[k] || PALETTE.muted),
+          borderWidth: 0, hoverOffset: 5,
+        }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>{
+            const total=ctx.dataset.data.reduce((a,b)=>a+b,0);
+            return ' '+ctx.label+': '+fmt(ctx.raw)+' ('+(ctx.raw/total*100).toFixed(1)+'%)';
+          }}}
+        }
+      }
+    });
+    document.getElementById('entryDonutLegend').innerHTML = entryEntries.map(([k,v]) => {
+      const total = entryEntries.reduce((s,[,x])=>s+x.gross,0);
+      return `<div class="legend-item"><div class="legend-dot" style="background:${entryColors[k]||PALETTE.muted}"></div>
+        <span>${entryLabels_es[k]||k}</span>
+        <span class="legend-pct" style="color:${entryColors[k]||PALETTE.muted}">${(v.gross/total*100).toFixed(1)}%</span></div>`;
+    }).join('');
+  }
+
+  // Entry mode trend by date
+  const entryByDate = {};
+  confirmed.forEach(r => {
+    if (!r.card_entry_mode || r.card_entry_mode === 'No disponible') return;
+    if (!entryByDate[r.date]) entryByDate[r.date] = {CONTACTLESS:0, CHIP:0};
+    entryByDate[r.date][r.card_entry_mode] = (entryByDate[r.date][r.card_entry_mode] || 0) + 1;
+  });
+  const entryDates = Object.keys(entryByDate).sort();
+  destroyChart('entryTrendChart');
+  if (entryDates.length > 0) {
+    charts.entryTrendChart = new Chart(document.getElementById('entryTrendChart'), {
+      type: 'bar',
+      data: {
+        labels: entryDates.map(fmtDateLabel),
+        datasets: [
+          {label:'Contactless', data:entryDates.map(d=>entryByDate[d].CONTACTLESS||0),
+           backgroundColor:PALETTE.teal, borderRadius:2, stack:'s'},
+          {label:'Chip', data:entryDates.map(d=>entryByDate[d].CHIP||0),
+           backgroundColor:PALETTE.blue, borderRadius:2, stack:'s'},
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:true,position:'top',labels:{boxWidth:10,font:{size:11}}},
+          tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.raw}}},
+        scales:{
+          x:{grid:{color:PALETTE.grid},ticks:{font:{size:9},maxRotation:45,maxTicksLimit:14},stacked:true},
+          y:{grid:{color:PALETTE.grid},stacked:true,ticks:{font:{size:10}}}
+        }
+      }
+    });
+  }
+
   // ── BANKS ─────────────────────────────────────────────────────
   const bankMap = {};
   confirmed.forEach(r => {
@@ -1045,7 +1153,7 @@ function render() {
     feeMap[k].net+=r.net_amount_to_merchant;
     feeMap[k].feeSum+=r.merchant_fee_percentage;
   });
-  const feeOrder = ['Débito','Crédito','Crédito Plus','Crédito Internacional'];
+  const feeOrder = ['Débito Nacional','Crédito Nacional','Crédito Plus','Crédito Internacional','AMEX','Débito','Crédito'];
   const feeRows = feeOrder.filter(k=>feeMap[k]).map(k=>[k,feeMap[k]]);
   const barClasses = {'Débito':'','Crédito':'blue','Crédito Plus':'violet','Crédito Internacional':'gold'};
 
@@ -1213,14 +1321,15 @@ const _minDate  = _allDates[0];
 const _maxDate  = _allDates[_allDates.length-1];
 document.getElementById('dateFrom').min   = _minDate;
 document.getElementById('dateFrom').max   = _maxDate;
-document.getElementById('dateFrom').value = _minDate;
+// dateFrom set by quickSet('ytd') below
 document.getElementById('dateTo').min     = _minDate;
 document.getElementById('dateTo').max     = _maxDate;
-document.getElementById('dateTo').value   = _maxDate;
+// dateTo set by quickSet('ytd') below
 
+// Default view: Year to Date
+quickSet('ytd', document.querySelector('.qbtn.active'));
 lastUpdated = new Date();
 updateLastUpdatedLabel();
-render();
 hideBanner();
 scheduleRefresh();
 
