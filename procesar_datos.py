@@ -20,11 +20,17 @@ TEMPLATE_FILE  = "index.template.html"
 DEFAULT_MERCHANT = "HOGAZA HOGAZA"
 DEFAULT_TZ_COL   = "UTC-7"
 
-def classify_fee(fee):
-    if fee <= 2.45: return "Débito"
-    if fee <= 2.84: return "Crédito"
-    if fee <= 2.99: return "Crédito Plus"
-    return "Crédito Internacional"
+def classify_card(row):
+    """Classify card type: Débito or Crédito. AMEX/Internacional added when available."""
+    funding = str(row.get("card_funding_source", "")).strip().upper()
+    if funding == "DEBIT":
+        return "Débito"
+    elif funding == "CREDIT":
+        return "Crédito"
+    else:
+        fee = float(row.get("merchant_fee_percentage", 0))
+        if fee <= 2.45: return "Débito"
+        return "Crédito"
 
 def procesar_excel(path, merchant, tz_col):
     print(f"Leyendo {path}...")
@@ -46,17 +52,32 @@ def procesar_excel(path, merchant, tz_col):
         print(f"Columnas disponibles: {tz_cols}")
         sys.exit(1)
 
+    from datetime import timedelta
+    # Extract UTC offset hours from tz_col string (e.g. "UTC-7" -> -7)
+    import re as _re
+    m = _re.search(r"UTC([+-]\d+)", tz_col)
+    utc_offset_hours = int(m.group(1)) if m else 0
+
     df[col_name] = df[col_name].astype(str).str.replace(r"Z+$", "Z", regex=True)
     df["pt_dt"]  = pd.to_datetime(df[col_name], utc=True, errors="coerce")
-    n_nat = df["pt_dt"].isna().sum()
-    if n_nat > 0:
-        print(f"AVISO: {n_nat} filas con fecha no parseable — se eliminaran")
-    df = df.dropna(subset=["pt_dt"])
+
+    # Fallback: rows missing tz column -> compute from transaction_date
+    nat_mask = df["pt_dt"].isna()
+    if nat_mask.any():
+        print(f"AVISO: {nat_mask.sum()} filas sin columna '{col_name}' — calculando desde transaction_date")
+        fallback = pd.to_datetime(df.loc[nat_mask, "transaction_date"], utc=True, errors="coerce") \
+                   + timedelta(hours=utc_offset_hours)
+        df.loc[nat_mask, "pt_dt"] = fallback
+
+    still_nat = df["pt_dt"].isna().sum()
+    if still_nat > 0:
+        print(f"AVISO: {still_nat} filas sin fecha resoluble — se eliminaran")
+        df = df.dropna(subset=["pt_dt"])
 
     df["date"]       = df["pt_dt"].dt.strftime("%Y-%m-%d")
     df["hour"]       = df["pt_dt"].dt.hour
     df["dow"]        = df["pt_dt"].dt.day_name()
-    df["card_class"] = df["merchant_fee_percentage"].apply(classify_fee)
+    df["card_class"] = df.apply(classify_card, axis=1)
 
     cols = [
         "date", "hour", "dow",
@@ -64,7 +85,10 @@ def procesar_excel(path, merchant, tz_col):
         "total_fee_amount", "net_amount_to_merchant",
         "card_type", "issuing_bank",
         "merchant_fee_percentage", "card_class",
+        "card_entry_mode", "salesperson_name", "terminal_serial_number",
     ]
+    # Only include columns that exist in this file version
+    cols = [c for c in cols if c in df.columns]
     records = df[cols].to_dict(orient="records")
 
     confirmed   = [r for r in records if r["transaction_status"] == "CONFIRMED"]

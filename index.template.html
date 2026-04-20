@@ -1153,7 +1153,7 @@ function render() {
     feeMap[k].net+=r.net_amount_to_merchant;
     feeMap[k].feeSum+=r.merchant_fee_percentage;
   });
-  const feeOrder = ['Débito Nacional','Crédito Nacional','Crédito Plus','Crédito Internacional','AMEX','Débito','Crédito'];
+  const feeOrder = ['Débito','Crédito','Crédito Plus','Crédito Internacional','AMEX'];
   const feeRows = feeOrder.filter(k=>feeMap[k]).map(k=>[k,feeMap[k]]);
   const barClasses = {'Débito':'','Crédito':'blue','Crédito Plus':'violet','Crédito Internacional':'gold'};
 
