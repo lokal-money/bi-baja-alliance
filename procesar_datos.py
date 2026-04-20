@@ -78,7 +78,7 @@ def procesar_excel(path, merchant, tz_col):
 
     return records, date_from, date_to
 
-def regenerar_html(records, date_from, date_to, merchant):
+def regenerar_html(records, date_from, date_to, merchant, password="lokalbi2026"):
     json_data = json.dumps(records, separators=(",", ":"))
 
     # Use template if available, otherwise use output file
@@ -91,6 +91,10 @@ def regenerar_html(records, date_from, date_to, merchant):
     # 1. Replace merchant name placeholder
     html = html.replace("{{MERCHANT_NAME}}", merchant)
     print(f"OK: Nombre del comercio: {merchant}")
+
+    # 1b. Replace password placeholder
+    html = html.replace("{{ACCESS_PASSWORD}}", password)
+    print(f"OK: Contrasena configurada")
 
     # 2. Replace RAW data block
     marker = "let RAW = "
@@ -156,6 +160,7 @@ if __name__ == "__main__":
     excel_path = sys.argv[1] if len(sys.argv) > 1 else EXCEL_FILE
     merchant   = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_MERCHANT
     tz_col     = sys.argv[3] if len(sys.argv) > 3 else DEFAULT_TZ_COL
+    password   = sys.argv[4] if len(sys.argv) > 4 else "lokalbi2026"
 
     if not os.path.exists(excel_path):
         print(f"ERROR: No se encontro el archivo {excel_path}")
@@ -163,4 +168,4 @@ if __name__ == "__main__":
 
     print(f"Comercio: {merchant} | Huso horario: {tz_col}")
     records, date_from, date_to = procesar_excel(excel_path, merchant, tz_col)
-    regenerar_html(records, date_from, date_to, merchant)
+    regenerar_html(records, date_from, date_to, merchant, password)
