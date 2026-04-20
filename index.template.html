@@ -395,9 +395,16 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
     </div>
     <div class="login-field">
       <div class="login-label">Contraseña</div>
+      <div style="position:relative;width:100%;">
       <input class="login-input" type="password" id="loginPass"
-             placeholder="••••••••"
+             placeholder="••••••••" style="padding-right:42px;width:100%;"
              onkeydown="if(event.key==='Enter') doLogin()"/>
+      <button onclick="togglePass()" type="button" id="eyeBtn"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
+               background:none;border:none;cursor:pointer;color:var(--muted);
+               font-size:17px;line-height:1;padding:2px;transition:color .2s;"
+        title="Mostrar/ocultar contraseña">👁</button>
+    </div>
     </div>
     <div class="login-error" id="loginError">Contraseña incorrecta</div>
     <button class="login-btn" onclick="doLogin()">Ingresar →</button>
@@ -1223,6 +1230,20 @@ loadData();
 // Cambia esta contraseña por la que quieras usar
 const ACCESS_PASSWORD = '{{ACCESS_PASSWORD}}';
 const SESSION_KEY = 'lm_bi_auth';
+
+function togglePass() {
+  const inp = document.getElementById('loginPass');
+  const btn = document.getElementById('eyeBtn');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.style.color = 'var(--teal)';
+    btn.innerHTML = '🙈';
+  } else {
+    inp.type = 'password';
+    btn.style.color = 'var(--muted)';
+    btn.innerHTML = '👁';
+  }
+}
 
 function doLogin() {
   const val = document.getElementById('loginPass').value;
