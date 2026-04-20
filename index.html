@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reporte Financiero · Hogaza Hogaza | Lokal Money BI</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy:#0b1120; --navy2:#111827; --panel:#161f30; --panel2:#1c2740;
+  --teal:#00c2a8; --teal2:#00a88f; --gold:#f5a623; --red:#e85d5d;
+  --blue:#3b82f6; --violet:#a78bfa; --text:#e8edf5; --muted:#7a8ba8;
+  --border:rgba(255,255,255,0.07); --card-r:14px;
+}
+
+/* ── LIGHT MODE ───────────────────────────────────────────── */
+body.light {
+  --navy:#f0f4f8; --navy2:#e2e8f0; --panel:#ffffff; --panel2:#f7fafc;
+  --teal:#00957e; --teal2:#007d6a; --gold:#d97706; --red:#dc2626;
+  --blue:#2563eb; --violet:#7c3aed; --text:#1a202c; --muted:#64748b;
+  --border:rgba(0,0,0,0.09); --card-r:14px;
+}
+body.light .site-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+body.light .kpi-strip { background: #ffffff; }
+body.light .kpi-item.accent { background: linear-gradient(135deg, #00957e, #007d6a); }
+body.light .report-footer { background: #ffffff; }
+body.light .period-badge {
+  background: rgba(0,149,126,0.1);
+  border-color: rgba(0,149,126,0.3);
+  color: var(--teal);
+}
+body.light .logo-text span { color: var(--teal); }
+body.light .logo-icon { background: linear-gradient(135deg,#00957e,#007d6a); }
+body.light table thead th { border-bottom-color: rgba(0,0,0,0.1); }
+body.light .date-filter { background: #f7fafc; border-color: rgba(0,0,0,0.1); }
+body.light .date-filter input[type=date] {
+  background: #ffffff; border-color: rgba(0,0,0,0.15); color: #1a202c;
+}
+body.light .date-filter input[type=date]:focus { border-color: var(--teal); }
+body.light input[type=date]::-webkit-calendar-picker-indicator { filter: none; }
+body.light .qbtn { border-color: rgba(0,0,0,0.15); color: #64748b; }
+body.light .qbtn:hover, body.light .qbtn.active {
+  background: rgba(0,149,126,0.1); border-color: rgba(0,149,126,0.4); color: var(--teal);
+}
+body.light .grp-btn { border-color: rgba(0,0,0,0.15); color: #64748b; }
+body.light .grp-btn:hover, body.light .grp-btn.active {
+  background: rgba(0,149,126,0.1); border-color: rgba(0,149,126,0.4); color: var(--teal);
+}
+body.light .refresh-btn { border-color: rgba(0,0,0,0.15); color: #64748b; }
+body.light .refresh-btn:hover { border-color: rgba(0,149,126,0.4); color: var(--teal); }
+body.light .bar-fill { background: linear-gradient(90deg,#00957e,#007d6a); }
+body.light .mov-item.best { border-color: rgba(0,149,126,0.3); }
+body.light .status-banner.loading { background: rgba(255,255,255,0.95); }
+body.light .no-data-card { background: #ffffff; border-color: rgba(217,119,6,0.3); }
+
+/* ── THEME TOGGLE ──────────────────────────────────────────── */
+.theme-toggle {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11.5px; font-weight: 600; color: var(--muted);
+  user-select: none;
+}
+.theme-toggle .t-label { transition: color .3s; }
+.theme-toggle .t-label.active { color: var(--text); }
+.toggle-track {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--panel2); border: 1px solid var(--border);
+  position: relative; cursor: pointer;
+  transition: background .3s, border-color .3s;
+  flex-shrink: 0;
+}
+body.light .toggle-track { background: #e2e8f0; border-color: rgba(0,0,0,0.15); }
+.toggle-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  position: absolute; top: 2px; left: 2px;
+  background: var(--muted);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), background .3s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+}
+body.light .toggle-thumb {
+  transform: translateX(20px);
+  background: var(--teal);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--text);font-size:13.5px;line-height:1.5;}
+
+/* HEADER */
+.site-header{background:linear-gradient(135deg,#0f1b2d 0%,#0b1120 60%,#07161f 100%);border-bottom:1px solid var(--border);padding:18px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.logo-mark{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--teal),var(--teal2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-weight:700;font-weight:800;font-size:17px;color:#fff;letter-spacing:-1px;}
+.logo-text{font-family:'Barlow',sans-serif;font-weight:700;font-weight:700;font-size:16px;}
+.logo-text span{color:var(--teal);}
+.header-center{flex:1;display:flex;justify-content:center;}
+.header-right{text-align:right;}
+.merchant-name{font-family:'Barlow',sans-serif;font-weight:700;font-weight:800;font-size:19px;letter-spacing:-0.3px;}
+.period-badge{display:inline-block;background:rgba(0,194,168,0.12);border:1px solid rgba(0,194,168,0.3);color:var(--teal);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:500;margin-top:4px;}
+
+/* DATE PICKER */
+.date-filter{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:10px 16px;}
+.date-filter label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;white-space:nowrap;}
+.date-filter input[type=date]{background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-family:'Barlow',sans-serif;font-size:12.5px;outline:none;cursor:pointer;}
+.date-filter input[type=date]:focus{border-color:var(--teal);}
+.date-filter .sep{color:var(--muted);font-size:13px;}
+.btn-apply{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border:none;border-radius:8px;padding:7px 16px;font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;white-space:nowrap;}
+.btn-apply:hover{opacity:0.85;}
+.quick-btns{display:flex;gap:6px;}
+.qbtn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:4px 11px;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.qbtn:hover,.qbtn.active{background:rgba(0,194,168,0.15);border-color:rgba(0,194,168,0.4);color:var(--teal);}
+
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);background:var(--panel);border-bottom:1px solid var(--border);}
+.kpi-item{padding:16px 24px;border-right:1px solid var(--border);position:relative;overflow:hidden;transition:background .3s;}
+.kpi-item:last-child{border-right:none;}
+.kpi-item.accent{background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 100%);}
+.kpi-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:5px;}
+.kpi-item.accent .kpi-label{color:rgba(255,255,255,0.75);}
+.kpi-value{font-family:'Barlow',sans-serif;font-weight:700;font-size:21px;font-weight:700;letter-spacing:-0.5px;transition:all .4s;}
+.kpi-item.accent .kpi-value{color:#fff;}
+.kpi-delta{font-size:10.5px;color:var(--muted);margin-top:3px;}
+
+/* LAYOUT */
+.main{padding:28px 36px;max-width:1320px;margin:0 auto;}
+.section{margin-bottom:32px;}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.section-icon{width:30px;height:30px;border-radius:8px;background:rgba(0,194,168,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.section-title{font-family:'Barlow',sans-serif;font-weight:700;font-size:14px;font-weight:700;}
+.section-sub{color:var(--muted);font-size:11.5px;margin-left:auto;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--card-r);padding:18px;position:relative;overflow:hidden;}
+.card-title{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:12px;}
+
+.chart-wrap{position:relative;}
+.chart-wrap canvas{width:100% !important;}
+
+/* STAT CARDS */
+.stat-card{background:var(--panel2);border:1px solid var(--border);border-radius:var(--card-r);padding:16px 18px;display:flex;flex-direction:column;gap:4px;}
+.stat-label{font-size:10.5px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.7px;}
+.stat-value{font-family:'Barlow',sans-serif;font-weight:700;font-size:24px;font-weight:800;letter-spacing:-0.5px;transition:all .4s;}
+.stat-tag{font-size:10px;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;width:fit-content;margin-top:2px;}
+.tag-green{background:rgba(0,194,168,0.12);color:var(--teal);}
+.tag-red{background:rgba(232,93,93,0.12);color:var(--red);}
+.tag-gold{background:rgba(245,166,35,0.12);color:var(--gold);}
+
+/* MOVEMENT CARDS */
+.mov-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.mov-item{background:var(--panel2);border-radius:10px;padding:12px 14px;border:1px solid var(--border);}
+.mov-item.best{border-color:rgba(0,194,168,0.3);}
+.mov-item.worst{border-color:rgba(232,93,93,0.2);}
+.mov-badge{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:2px 7px;border-radius:12px;margin-bottom:5px;display:inline-block;}
+.mov-badge.best{background:var(--teal);color:#fff;}
+.mov-badge.worst{background:var(--red);color:#fff;}
+.mov-name{font-size:13px;font-weight:600;margin-bottom:2px;}
+.mov-amount{font-family:'Barlow',sans-serif;font-weight:700;font-size:15px;font-weight:700;color:var(--teal);transition:all .4s;}
+.mov-item.worst .mov-amount{color:var(--muted);}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);font-weight:600;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12.5px;transition:background .1s;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.025);}
+.td-right{text-align:right;}
+.td-bold{font-weight:600;}
+.td-red{color:var(--red);}
+.td-teal{color:var(--teal);}
+.td-muted{color:var(--muted);font-size:11.5px;}
+.total-row td{border-top:1px solid var(--border);font-weight:700;color:var(--text);font-family:'Barlow',sans-serif;font-weight:700;font-size:12.5px;padding-top:11px;}
+
+/* BARS */
+.bar-track{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;margin-top:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--teal2));transition:width .8s cubic-bezier(.22,1,.36,1);}
+.bar-fill.blue{background:linear-gradient(90deg,#3b82f6,#2563eb);}
+.bar-fill.gold{background:linear-gradient(90deg,var(--gold),#e09a1f);}
+.bar-fill.violet{background:linear-gradient(90deg,#a78bfa,#7c3aed);}
+
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:16px;flex-direction:column;}
+.donut-canvas{flex:0 0 120px;height:120px;margin:0 auto;}
+.donut-legend{width:100%;display:flex;flex-direction:column;gap:7px;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:12px;}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.legend-pct{margin-left:auto;font-family:'Barlow',sans-serif;font-weight:700;font-weight:700;font-size:12.5px;}
+
+/* BANK BARS */
+.bank-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.bank-row:last-child{border-bottom:none;}
+.bank-name{width:95px;font-size:11.5px;font-weight:500;}
+.bank-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.bank-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#3b82f6,#6366f1);transition:width .8s cubic-bezier(.22,1,.36,1);}
+.bank-amount{width:85px;text-align:right;font-family:'Barlow',sans-serif;font-weight:700;font-size:11.5px;font-weight:600;}
+.bank-count{width:40px;text-align:right;font-size:11px;color:var(--muted);}
+
+/* EVENT CARDS */
+.event-card{background:var(--panel2);border-radius:10px;padding:14px 16px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.ev-label{font-size:11.5px;color:var(--muted);margin-bottom:3px;}
+.ev-value{font-family:'Barlow',sans-serif;font-weight:700;font-size:18px;font-weight:700;transition:all .4s;}
+.ev-icon{font-size:24px;opacity:0.45;}
+
+/* NO DATA */
+.no-data{display:flex;align-items:center;justify-content:center;height:100%;min-height:80px;color:var(--muted);font-size:12px;font-style:italic;}
+
+.grp-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:3px 11px;font-size:11px;font-family:'Barlow',sans-serif;cursor:pointer;transition:all .2s;}
+.grp-btn:hover,.grp-btn.active{background:rgba(0,194,168,0.15);border-color:rgba(0,194,168,0.4);color:var(--teal);}
+
+/* FOOTER */
+.report-footer{background:var(--panel);border-top:1px solid var(--border);padding:16px 36px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.card,.stat-card,.event-card{animation:fadeUp .45s ease both;}
+
+
+/* STATUS BANNER */
+.status-banner {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: none; align-items: center; gap: 10px;
+  padding: 10px 20px; border-radius: 30px;
+  font-size: 12.5px; font-weight: 600; z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px); white-space: nowrap;
+}
+.status-banner.loading { background: rgba(22,31,48,0.95); color: var(--teal); border: 1px solid rgba(0,194,168,0.3); }
+.status-banner.success { background: rgba(0,194,168,0.15); color: var(--teal); border: 1px solid rgba(0,194,168,0.4); }
+.status-banner.error   { background: rgba(232,93,93,0.15); color: var(--red);  border: 1px solid rgba(232,93,93,0.4); }
+.status-banner.error a { color: var(--red); text-decoration: underline; cursor: pointer; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.sb-dot { width:8px; height:8px; border-radius:50%; background:var(--teal); animation: pulse 1.2s infinite; flex-shrink:0; }
+
+/* REFRESH INFO BAR */
+.refresh-bar {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 11px; color: var(--muted);
+}
+.refresh-bar span { display: inline-flex; align-items: center; gap: 5px; }
+.refresh-btn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 20px; padding: 3px 11px;
+  font-size: 11px; cursor: pointer; font-family: 'Barlow', sans-serif;
+  transition: all .2s;
+}
+.refresh-btn:hover { border-color: rgba(0,194,168,0.4); color: var(--teal); }
+
+/* LOADING OVERLAY */
+.data-overlay {
+  position: fixed; inset: 0; background: rgba(11,17,32,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500; backdrop-filter: blur(3px);
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+.data-overlay.show { opacity: 1; pointer-events: all; }
+.overlay-card {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px 40px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-ring {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid rgba(0,194,168,0.2);
+  border-top-color: var(--teal);
+  animation: spin 0.9s linear infinite;
+}
+.overlay-text { font-size: 14px; color: var(--muted); }
+
+/* NO DATA MESSAGE */
+.no-data-msg {
+  display: none;
+  position: fixed; inset: 0;
+  align-items: center; justify-content: center;
+  z-index: 200; pointer-events: none;
+}
+.no-data-msg.show { display: flex; }
+.no-data-card {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px 44px;
+  text-align: center; pointer-events: all;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  position: relative;
+}
+.no-data-icon { font-size: 36px; margin-bottom: 12px; }
+.no-data-title { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+.no-data-sub { color: var(--muted); font-size: 13px; }
+
+/* SPINNER */
+.updating{position:fixed;top:16px;right:16px;background:var(--teal);color:#fff;font-size:11px;font-weight:600;padding:6px 14px;border-radius:20px;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;}
+.updating.show{opacity:1;}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--navy);}
+::-webkit-scrollbar-thumb{background:var(--panel2);border-radius:3px;}
+
+/* color vars for input date in dark bg */
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="status-banner" id="statusBanner"></div>
+<div class="data-overlay" id="dataOverlay"><div class="overlay-card"><div class="spinner-ring"></div><div class="overlay-text">Conectando con Metabase…</div></div></div>
+<div class="no-data-msg" id="noDataMsg">
+  <div class="no-data-card">
+    <button onclick="closeNoData()" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px;" title="Cerrar">✕</button>
+    <div class="no-data-icon">📭</div>
+    <div class="no-data-title">Sin datos para el período seleccionado</div>
+    <div class="no-data-sub">Intenta seleccionar otro rango de fechas</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="logo-mark">
+    <div class="logo-icon">LM</div>
+    <div class="logo-text">Lokal Money <span>BI</span></div>
+  </div>
+
+  <div class="header-center">
+    <div class="date-filter">
+      <label>Desde</label>
+      <input type="date" id="dateFrom" value="2026-03-27"/>
+      <span class="sep">→</span>
+      <label>Hasta</label>
+      <input type="date" id="dateTo" value="2026-04-19"/>
+      <button class="btn-apply" onclick="applyFilter()">Aplicar</button>
+      <div class="quick-btns">
+        <button class="qbtn" onclick="quickSet(0,this)">Hoy</button>
+        <button class="qbtn" onclick="quickSet(-1,this)">Ayer</button>
+        <button class="qbtn" onclick="quickSet(7,this)">7d</button>
+        <button class="qbtn" onclick="quickSet(14,this)">14d</button>
+        <button class="qbtn active" onclick="quickSet(999,this)">Todo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="merchant-name">BAJA ALLIANCE </div>
+    <div class="period-badge" id="periodLabel">20 Feb – 15 Mar 2026</div>
+  </div>
+
+  <div class="theme-toggle" onclick="toggleTheme()" style="margin-left:20px;flex-shrink:0;">
+    <span class="t-label" id="darkLabel">🌙</span>
+    <div class="toggle-track">
+      <div class="toggle-thumb" id="toggleThumb">☀️</div>
+    </div>
+    <span class="t-label" id="lightLabel">☀️</span>
+  </div>
+</header>
+
+<!-- KPI STRIP -->
+<div class="kpi-strip">
+  <div class="kpi-item"><div class="kpi-label">Transacciones</div><div class="kpi-value" id="kTxns">—</div></div>
+  <div class="kpi-item"><div class="kpi-label">Ticket Medio</div><div class="kpi-value" id="kTicket">—</div></div>
+  <div class="kpi-item"><div class="kpi-label">Valor Bruto</div><div class="kpi-value" id="kGross">—</div></div>
+  <div class="kpi-item"><div class="kpi-label">Total Comisiones</div><div class="kpi-value" id="kFees" style="color:var(--blue)">—</div></div>
+  <div class="kpi-item accent"><div class="kpi-label">Valor Neto</div><div class="kpi-value" id="kNet">—</div></div>
+</div>
+
+<main class="main">
+
+  <!-- MI NEGOCIO -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon">📊</div>
+      <div class="section-title">Mi Negocio</div>
+      <div class="section-sub" id="negocioSub">Análisis del período seleccionado</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="card-title" style="margin-bottom:0;">Tendencia de ventas (MXN)</div>
+          <div style="display:flex;gap:5px;">
+            <button class="grp-btn active" onclick="setGrouping('day',this)">Día</button>
+            <button class="grp-btn" onclick="setGrouping('week',this)">Semana</button>
+            <button class="grp-btn" onclick="setGrouping('month',this)">Mes</button>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:175px;"><canvas id="dailyChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Movimiento semanal</div>
+        <div class="mov-pair">
+          <div class="mov-item best"><div class="mov-badge best">Mayor</div><div class="mov-name" id="bestDay">—</div><div class="mov-amount" id="bestDayAmt">—</div></div>
+          <div class="mov-item worst"><div class="mov-badge worst">Menor</div><div class="mov-name" id="worstDay">—</div><div class="mov-amount" id="worstDayAmt">—</div></div>
+        </div>
+        <div style="margin-top:12px;"><div class="chart-wrap" style="height:76px;"><canvas id="dowChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Movimiento por hora</div>
+        <div class="mov-pair">
+          <div class="mov-item best"><div class="mov-badge best">Mayor</div><div class="mov-name" id="bestHour">—</div><div class="mov-amount" id="bestHourAmt">—</div></div>
+          <div class="mov-item worst"><div class="mov-badge worst">Menor</div><div class="mov-name" id="worstHour">—</div><div class="mov-amount" id="worstHourAmt">—</div></div>
+        </div>
+        <div style="margin-top:12px;"><div class="chart-wrap" style="height:76px;"><canvas id="hourChart"></canvas></div></div>
+      </div>
+    </div>
+    <div class="grid-4">
+      <div class="stat-card"><div class="stat-label">Ventas confirmadas</div><div class="stat-value" id="sConfirmed" style="color:var(--teal)">—</div><div class="stat-tag tag-green">✓ Confirmadas</div></div>
+      <div class="stat-card"><div class="stat-label">Cancelaciones</div><div class="stat-value" id="sCancelled" style="color:var(--red)">—</div><div class="stat-tag tag-red" id="sCancelledPct">—</div></div>
+      <div class="stat-card"><div class="stat-label">Devoluciones</div><div class="stat-value" id="sRefunded" style="color:var(--gold)">—</div><div class="stat-tag tag-gold" id="sRefundedPct">—</div></div>
+      <div class="stat-card"><div class="stat-label">Comisión promedio</div><div class="stat-value" id="sAvgFee">—</div><div class="stat-tag tag-green">Tasa efectiva</div></div>
+    </div>
+  </section>
+
+  <!-- RESUMEN DE VENTAS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon">💳</div>
+      <div class="section-title">Resumen de Ventas</div>
+      <div class="section-sub">Ventas realizadas con tarjeta</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:16px;">
+      <div class="card">
+        <div class="card-title">Ventas por red de tarjeta</div>
+        <table>
+          <thead><tr><th>Red</th><th class="td-right">Txns</th><th class="td-right">Bruto</th><th class="td-right">Comisión</th><th class="td-right">Neto</th></tr></thead>
+          <tbody id="cardNetTable"></tbody>
+          <tfoot id="cardNetFoot"></tfoot>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">Distribución por marca</div>
+        <div class="donut-wrap"><div class="donut-canvas"><canvas id="cardDonut"></canvas></div><div class="donut-legend" id="cardDonutLegend"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Estado de transacciones</div>
+        <div class="donut-wrap"><div class="donut-canvas"><canvas id="statusDonut"></canvas></div><div class="donut-legend" id="statusDonutLegend"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BANCOS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon">🏦</div>
+      <div class="section-title">Bancos Emisores</div>
+      <div class="section-sub">Top 8 por monto transaccionado</div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="card-title" style="margin-bottom:0;">Participación por banco (MXN)</div>
+          <div style="display:flex;gap:4px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;">
+            <span style="width:40px;text-align:right;">Txns</span>
+            <span style="width:85px;text-align:right;">Monto</span>
+            <span style="width:72px;text-align:right;">Ticket</span>
+          </div>
+        </div>
+        <div id="bankBars"></div>
+      </div>
+      <div class="card"><div class="card-title">Volumen por banco</div><div class="chart-wrap" style="height:210px;"><canvas id="bankChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- EVENTOS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <div class="section-title">Eventos Financieros</div>
+      <div class="section-sub">Otros valores importantes</div>
+    </div>
+    <div class="grid-4">
+      <div class="event-card"><div><div class="ev-label">Cancelaciones</div><div class="ev-value" id="evCancelled" style="color:var(--red)">—</div><div class="stat-tag tag-red" style="margin-top:5px;">operaciones</div></div><div class="ev-icon">🚫</div></div>
+      <div class="event-card"><div><div class="ev-label">Devoluciones</div><div class="ev-value" id="evRefunded" style="color:var(--gold)">—</div><div class="stat-tag tag-gold" style="margin-top:5px;">operaciones</div></div><div class="ev-icon">↩️</div></div>
+      <div class="event-card"><div><div class="ev-label">Tasa de éxito</div><div class="ev-value" id="evSuccess" style="color:var(--teal)">—</div><div class="stat-tag tag-green" style="margin-top:5px;">del total de txns</div></div><div class="ev-icon">✅</div></div>
+      <div class="event-card"><div><div class="ev-label">Total operaciones</div><div class="ev-value" id="evTotal">—</div><div class="stat-tag tag-gold" style="margin-top:5px;">período completo</div></div><div class="ev-icon">📋</div></div>
+    </div>
+  </section>
+
+  <!-- COMISIONES -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon">%</div>
+      <div class="section-title">Lokal Money BI · Comisiones</div>
+      <div class="section-sub">Análisis de tasas por tipo de tarjeta</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle de comisiones por tipo de tarjeta</div>
+      <table>
+        <thead><tr>
+          <th>Tipo de Tarjeta</th>
+          <th class="td-right">Transacciones</th>
+          <th class="td-right">Monto Bruto</th>
+          <th class="td-right">Ticket Prom.</th>
+          <th class="td-right">Comisión Total</th>
+          <th class="td-right">Tasa Efectiva</th>
+          <th class="td-right">Monto Neto</th>
+          <th class="td-right">% Participación</th>
+        </tr></thead>
+        <tbody id="feeTable"></tbody>
+        <tfoot id="feeFoot"></tfoot>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer class="report-footer">
+  <div>Generado por <strong>Lokal Money BI</strong></div>
+  <div>BAJA ALLIANCE  · <span id="footerPeriod">20 Feb 2026 – 15 Mar 2026</span> · Todas las cifras en MXN</div>
+</footer>
+
+<script>
+// ── RAW DATA ─────────────────────────────────────────────────
+let RAW = [{"date":"2026-03-27","hour":12,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":2.0,"total_fee_amount":0.0598,"net_amount_to_merchant":1.930632,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-03-27","hour":13,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":15.0,"total_fee_amount":0.4485,"net_amount_to_merchant":14.47974,"card_type":"VISA","issuing_bank":"VISA","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-03-27","hour":13,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":2.2,"total_fee_amount":0.06578,"net_amount_to_merchant":2.1236952,"card_type":"VISA","issuing_bank":"VISA","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":11,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":40.0,"total_fee_amount":1.196,"net_amount_to_merchant":38.61264,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":11,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":25.0,"total_fee_amount":0.7475,"net_amount_to_merchant":24.1329,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":11,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":80.0,"total_fee_amount":2.392,"net_amount_to_merchant":77.22528,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":11,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":40.0,"total_fee_amount":1.196,"net_amount_to_merchant":38.61264,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":11,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":40.0,"total_fee_amount":1.196,"net_amount_to_merchant":38.61264,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":11,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":65.0,"total_fee_amount":1.9435,"net_amount_to_merchant":62.74554,"card_type":"VISA","issuing_bank":"VISA","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":12,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":89.95,"total_fee_amount":2.689505,"net_amount_to_merchant":86.8301742,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":18,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":35.0,"total_fee_amount":1.0465,"net_amount_to_merchant":33.78606,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":19,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":30.0,"total_fee_amount":NaN,"net_amount_to_merchant":30.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-10","hour":19,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":30.0,"total_fee_amount":NaN,"net_amount_to_merchant":30.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-10","hour":19,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":30.0,"total_fee_amount":NaN,"net_amount_to_merchant":30.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-10","hour":19,"dow":"Friday","transaction_status":"REFUNDED","transaction_amount":30.0,"total_fee_amount":0.897,"net_amount_to_merchant":28.95948,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-10","hour":19,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":30.0,"total_fee_amount":NaN,"net_amount_to_merchant":30.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-10","hour":19,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":30.0,"total_fee_amount":NaN,"net_amount_to_merchant":30.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":18,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":30.0,"total_fee_amount":0.897,"net_amount_to_merchant":28.95948,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":18,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":18,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":18,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":18,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":18,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":150.0,"total_fee_amount":4.485,"net_amount_to_merchant":144.7974,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":18,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":18,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":115.0,"total_fee_amount":NaN,"net_amount_to_merchant":115.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":435.0,"total_fee_amount":13.0065,"net_amount_to_merchant":419.91246,"card_type":"VISA","issuing_bank":"TARJETAS D","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":300.0,"total_fee_amount":8.97,"net_amount_to_merchant":289.5948,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":300.0,"total_fee_amount":8.97,"net_amount_to_merchant":289.5948,"card_type":"MASTERCARD","issuing_bank":"INVEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":150.0,"total_fee_amount":4.485,"net_amount_to_merchant":144.7974,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":345.0,"total_fee_amount":NaN,"net_amount_to_merchant":345.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":345.0,"total_fee_amount":NaN,"net_amount_to_merchant":345.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":345.0,"total_fee_amount":NaN,"net_amount_to_merchant":345.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":345.0,"total_fee_amount":NaN,"net_amount_to_merchant":345.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"MASTERCARD","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"MASTERCARD","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"MASTERCARD","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":490.0,"total_fee_amount":NaN,"net_amount_to_merchant":490.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":19,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":490.0,"total_fee_amount":NaN,"net_amount_to_merchant":490.0,"card_type":"MASTERCARD","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":20,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":265.0,"total_fee_amount":7.9235,"net_amount_to_merchant":255.80874,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":20,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":20,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":265.0,"total_fee_amount":7.9235,"net_amount_to_merchant":255.80874,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":20,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":115.0,"total_fee_amount":NaN,"net_amount_to_merchant":115.0,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":20,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":230.0,"total_fee_amount":6.877,"net_amount_to_merchant":222.02268,"card_type":"MASTERCARD","issuing_bank":"KLAR TECHN","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":20,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":20,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":265.0,"total_fee_amount":7.9235,"net_amount_to_merchant":255.80874,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":150.0,"total_fee_amount":4.485,"net_amount_to_merchant":144.7974,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":575.0,"total_fee_amount":NaN,"net_amount_to_merchant":575.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":575.0,"total_fee_amount":17.1925,"net_amount_to_merchant":555.0567,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":250.0,"total_fee_amount":7.475,"net_amount_to_merchant":241.329,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":300.0,"total_fee_amount":8.97,"net_amount_to_merchant":289.5948,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":600.0,"total_fee_amount":17.94,"net_amount_to_merchant":579.1896,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"MASTERCARD","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-14","hour":21,"dow":"Tuesday","transaction_status":"CANCELLED","transaction_amount":150.0,"total_fee_amount":NaN,"net_amount_to_merchant":150.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-17","hour":13,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":1.0,"total_fee_amount":NaN,"net_amount_to_merchant":1.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-17","hour":13,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":1.0,"total_fee_amount":NaN,"net_amount_to_merchant":1.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-17","hour":13,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":1.0,"total_fee_amount":NaN,"net_amount_to_merchant":1.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-17","hour":13,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":1.0,"total_fee_amount":NaN,"net_amount_to_merchant":1.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-17","hour":14,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":1.0,"total_fee_amount":NaN,"net_amount_to_merchant":1.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":2,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":180.0,"total_fee_amount":5.382,"net_amount_to_merchant":173.75688,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":2,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":2,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":75.0,"total_fee_amount":2.2425,"net_amount_to_merchant":72.3987,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":2,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":2,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":60.0,"total_fee_amount":NaN,"net_amount_to_merchant":60.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":245.0,"total_fee_amount":7.3255,"net_amount_to_merchant":236.50242,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"COMPROPAGO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":245.0,"total_fee_amount":7.3255,"net_amount_to_merchant":236.50242,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":280.0,"total_fee_amount":8.372,"net_amount_to_merchant":270.28848,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":180.0,"total_fee_amount":5.382,"net_amount_to_merchant":173.75688,"card_type":"VISA","issuing_bank":"AZTECA","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":180.0,"total_fee_amount":5.382,"net_amount_to_merchant":173.75688,"card_type":"MASTERCARD","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":90.0,"total_fee_amount":2.691,"net_amount_to_merchant":86.87844,"card_type":"MASTERCARD","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":75.0,"total_fee_amount":2.2425,"net_amount_to_merchant":72.3987,"card_type":"VISA","issuing_bank":"AZTECA","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":415.0,"total_fee_amount":12.4085,"net_amount_to_merchant":400.60614,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":415.0,"total_fee_amount":NaN,"net_amount_to_merchant":415.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":415.0,"total_fee_amount":NaN,"net_amount_to_merchant":415.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":160.0,"total_fee_amount":4.784,"net_amount_to_merchant":154.45056,"card_type":"MASTERCARD","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":90.0,"total_fee_amount":2.691,"net_amount_to_merchant":86.87844,"card_type":"VISA","issuing_bank":"SCOTIABANK","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"COMPROPAGO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":1,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":110.0,"total_fee_amount":3.289,"net_amount_to_merchant":106.18476,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":185.0,"total_fee_amount":5.5315,"net_amount_to_merchant":178.58346,"card_type":"VISA","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":90.0,"total_fee_amount":NaN,"net_amount_to_merchant":90.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":90.0,"total_fee_amount":NaN,"net_amount_to_merchant":90.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":90.0,"total_fee_amount":2.691,"net_amount_to_merchant":86.87844,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":75.0,"total_fee_amount":2.2425,"net_amount_to_merchant":72.3987,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":175.0,"total_fee_amount":5.2325,"net_amount_to_merchant":168.9303,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":175.0,"total_fee_amount":5.2325,"net_amount_to_merchant":168.9303,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":140.0,"total_fee_amount":4.186,"net_amount_to_merchant":135.14424,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"TARJETAS D","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":115.0,"total_fee_amount":NaN,"net_amount_to_merchant":115.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":75.0,"total_fee_amount":2.2425,"net_amount_to_merchant":72.3987,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":405.0,"total_fee_amount":12.1095,"net_amount_to_merchant":390.95298,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"AZTECA","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"COMPROPAGO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":205.0,"total_fee_amount":6.1295,"net_amount_to_merchant":197.88978,"card_type":"MASTERCARD","issuing_bank":"INVEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"MERCADOPAG","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":110.0,"total_fee_amount":3.289,"net_amount_to_merchant":106.18476,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":230.0,"total_fee_amount":6.877,"net_amount_to_merchant":222.02268,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-19","hour":0,"dow":"Sunday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":560.0,"total_fee_amount":16.744,"net_amount_to_merchant":540.57696,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"VISA","issuing_bank":"COMPROPAGO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":780.0,"total_fee_amount":23.322,"net_amount_to_merchant":752.94648,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":780.0,"total_fee_amount":NaN,"net_amount_to_merchant":780.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"AFIRME","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":280.0,"total_fee_amount":8.372,"net_amount_to_merchant":270.28848,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":280.0,"total_fee_amount":NaN,"net_amount_to_merchant":280.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":310.0,"total_fee_amount":9.269,"net_amount_to_merchant":299.24796,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":90.0,"total_fee_amount":2.691,"net_amount_to_merchant":86.87844,"card_type":"VISA","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":90.0,"total_fee_amount":2.691,"net_amount_to_merchant":86.87844,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BAJIO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":270.0,"total_fee_amount":NaN,"net_amount_to_merchant":270.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANJERCITO","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANJERCITO","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":75.0,"total_fee_amount":2.2425,"net_amount_to_merchant":72.3987,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":270.0,"total_fee_amount":NaN,"net_amount_to_merchant":270.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":270.0,"total_fee_amount":NaN,"net_amount_to_merchant":270.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":205.0,"total_fee_amount":6.1295,"net_amount_to_merchant":197.88978,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":205.0,"total_fee_amount":NaN,"net_amount_to_merchant":205.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":205.0,"total_fee_amount":NaN,"net_amount_to_merchant":205.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":175.0,"total_fee_amount":5.2325,"net_amount_to_merchant":168.9303,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"AZTECA","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":175.0,"total_fee_amount":5.2325,"net_amount_to_merchant":168.9303,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":310.0,"total_fee_amount":9.269,"net_amount_to_merchant":299.24796,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":23,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":320.0,"total_fee_amount":9.568,"net_amount_to_merchant":308.90112,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":220.0,"total_fee_amount":6.578,"net_amount_to_merchant":212.36952,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":110.0,"total_fee_amount":NaN,"net_amount_to_merchant":110.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":110.0,"total_fee_amount":NaN,"net_amount_to_merchant":110.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":90.0,"total_fee_amount":2.691,"net_amount_to_merchant":86.87844,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":405.0,"total_fee_amount":12.1095,"net_amount_to_merchant":390.95298,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":90.0,"total_fee_amount":2.691,"net_amount_to_merchant":86.87844,"card_type":"VISA","issuing_bank":"AFIRME","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":405.0,"total_fee_amount":12.1095,"net_amount_to_merchant":390.95298,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":245.0,"total_fee_amount":NaN,"net_amount_to_merchant":245.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":245.0,"total_fee_amount":NaN,"net_amount_to_merchant":245.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":175.0,"total_fee_amount":5.2325,"net_amount_to_merchant":168.9303,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":350.0,"total_fee_amount":10.465,"net_amount_to_merchant":337.8606,"card_type":"VISA","issuing_bank":"COMPROPAGO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":240.0,"total_fee_amount":7.176,"net_amount_to_merchant":231.67584,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":180.0,"total_fee_amount":5.382,"net_amount_to_merchant":173.75688,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":240.0,"total_fee_amount":7.176,"net_amount_to_merchant":231.67584,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":150.0,"total_fee_amount":4.485,"net_amount_to_merchant":144.7974,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":135.0,"total_fee_amount":NaN,"net_amount_to_merchant":135.0,"card_type":"MASTERCARD","issuing_bank":"EXTRANJERA","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":245.0,"total_fee_amount":7.3255,"net_amount_to_merchant":236.50242,"card_type":"MASTERCARD","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":105.0,"total_fee_amount":3.1395,"net_amount_to_merchant":101.35818,"card_type":"VISA","issuing_bank":"BAJIO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":22,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":145.0,"total_fee_amount":4.3355,"net_amount_to_merchant":139.97082,"card_type":"VISA","issuing_bank":"HSBC MEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":185.0,"total_fee_amount":5.5315,"net_amount_to_merchant":178.58346,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":270.0,"total_fee_amount":8.073,"net_amount_to_merchant":260.63532,"card_type":"MASTERCARD","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":270.0,"total_fee_amount":NaN,"net_amount_to_merchant":270.0,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":185.0,"total_fee_amount":NaN,"net_amount_to_merchant":185.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":280.0,"total_fee_amount":8.372,"net_amount_to_merchant":270.28848,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":350.0,"total_fee_amount":10.465,"net_amount_to_merchant":337.8606,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":280.0,"total_fee_amount":NaN,"net_amount_to_merchant":280.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CANCELLED","transaction_amount":280.0,"total_fee_amount":NaN,"net_amount_to_merchant":280.0,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":135.0,"total_fee_amount":4.0365,"net_amount_to_merchant":130.31766,"card_type":"VISA","issuing_bank":"COMPROPAGO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":255.0,"total_fee_amount":7.6245,"net_amount_to_merchant":246.15558,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":245.0,"total_fee_amount":7.3255,"net_amount_to_merchant":236.50242,"card_type":"VISA","issuing_bank":"BANAMEX","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":21,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":175.0,"total_fee_amount":5.2325,"net_amount_to_merchant":168.9303,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":20,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":560.0,"total_fee_amount":16.744,"net_amount_to_merchant":540.57696,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":20,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":230.0,"total_fee_amount":6.877,"net_amount_to_merchant":222.02268,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":20,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":280.0,"total_fee_amount":8.372,"net_amount_to_merchant":270.28848,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":20,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":350.0,"total_fee_amount":10.465,"net_amount_to_merchant":337.8606,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":20,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":230.0,"total_fee_amount":6.877,"net_amount_to_merchant":222.02268,"card_type":"VISA","issuing_bank":"COMPROPAGO","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":20,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":25.0,"total_fee_amount":0.7475,"net_amount_to_merchant":24.1329,"card_type":"MASTERCARD","issuing_bank":"SANTANDER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":20,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":19,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":"BANCOMER","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":19,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":115.0,"total_fee_amount":3.4385,"net_amount_to_merchant":111.01134,"card_type":"VISA","issuing_bank":NaN,"merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-18","hour":19,"dow":"Saturday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":22,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":22,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":22,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":22,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":21,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":21,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":20,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":19,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"MASTERCARD","issuing_bank":"MASTERCARD","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":18,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":17,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":17,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":17,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"},{"date":"2026-04-17","hour":17,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":1.0,"total_fee_amount":NaN,"net_amount_to_merchant":1.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-17","hour":16,"dow":"Friday","transaction_status":"CANCELLED","transaction_amount":1.0,"total_fee_amount":NaN,"net_amount_to_merchant":1.0,"card_type":"UNKNOWN","issuing_bank":NaN,"merchant_fee_percentage":0.0,"card_class":"D\u00e9bito"},{"date":"2026-04-17","hour":16,"dow":"Friday","transaction_status":"CONFIRMED","transaction_amount":1.0,"total_fee_amount":0.0299,"net_amount_to_merchant":0.965316,"card_type":"VISA","issuing_bank":"BANORTE","merchant_fee_percentage":2.99,"card_class":"Cr\u00e9dito Plus"}]
+let lastUpdated = null;
+let refreshTimer = null;
+let countdownTimer = null;
+const REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes
+
+async function loadData() {
+  showBanner('loading');
+  try {
+    const res = await fetch('/api/ventas');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    RAW = await res.json();
+    lastUpdated = new Date();
+    updateLastUpdatedLabel();
+    render();
+    showBanner('success');
+    setTimeout(() => hideBanner(), 3000);
+    scheduleRefresh();
+  } catch(err) {
+    console.warn('Backend no disponible, usando datos embebidos:', err.message);
+    // Fallback: use embedded data silently
+    if (RAW.length > 0) {
+      if (!lastUpdated) {
+        lastUpdated = new Date();
+        updateLastUpdatedLabel();
+        render();
+      }
+      hideBanner();
+    } else {
+      showBanner('error', err.message);
+    }
+  }
+}
+
+function scheduleRefresh() {
+  if (refreshTimer)  clearTimeout(refreshTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
+  let remaining = REFRESH_INTERVAL;
+  countdownTimer = setInterval(() => {
+    remaining -= 1000;
+    if (remaining <= 0) { clearInterval(countdownTimer); return; }
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    const el = document.getElementById('nextRefresh');
+    if (el) el.textContent = `Próxima actualización: ${mins}:${secs.toString().padStart(2,'0')}`;
+  }, 1000);
+  refreshTimer = setTimeout(() => loadData(), REFRESH_INTERVAL);
+}
+
+function updateLastUpdatedLabel() {
+  const el = document.getElementById('lastUpdated');
+  if (el && lastUpdated) {
+    el.textContent = 'Actualizado: ' + lastUpdated.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+  }
+}
+
+function showBanner(type, msg) {
+  const el = document.getElementById('statusBanner');
+  el.className = 'status-banner ' + type;
+  if (type === 'loading') el.innerHTML = '<span class="sb-dot"></span> Cargando datos desde Metabase…';
+  else if (type === 'success') el.innerHTML = '✓ Datos actualizados correctamente';
+  else el.innerHTML = '⚠ Error al cargar datos: ' + msg + ' — <a href="#" onclick="loadData();return false;">Reintentar</a>';
+  el.style.display = 'flex';
+}
+
+function hideBanner() {
+  const el = document.getElementById('statusBanner');
+  el.style.display = 'none';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+const fmt = v => '$' + Number(v).toLocaleString('es-MX', {minimumFractionDigits:0,maximumFractionDigits:0});
+const fmt2 = v => '$' + Number(v).toLocaleString('es-MX', {minimumFractionDigits:2,maximumFractionDigits:2});
+const pct = (a,b) => b ? (a/b*100).toFixed(1)+'%' : '0%';
+
+const DOW_ES = {Monday:'Lunes',Tuesday:'Martes',Wednesday:'Miércoles',Thursday:'Jueves',Friday:'Viernes',Saturday:'Sábado',Sunday:'Domingo'};
+const DOW_SHORT = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const DOW_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+const CARD_COLORS = {VISA:'#1a1fe8',MASTERCARD:'#eb001b',CARNET:'#f5a623',UNKNOWN:'#7a8ba8',AMEX:'#2563eb'};
+const TYPE_COLORS = {'Débito':'#00c2a8','Crédito':'#3b82f6','Crédito Plus':'#a78bfa','Crédito Internacional':'#f5a623'};
+const STATUS_COLORS = {CONFIRMED:'#00c2a8',CANCELLED:'#e85d5d',REFUNDED:'#f5a623'};
+
+// ── CHART INSTANCES ───────────────────────────────────────────
+let charts = {};
+const PALETTE_DARK  = {teal:'#00c2a8',red:'#e85d5d',gold:'#f5a623',blue:'#3b82f6',muted:'#7a8ba8',grid:'rgba(255,255,255,0.06)'};
+const PALETTE_LIGHT = {teal:'#00957e',red:'#dc2626',gold:'#d97706',blue:'#2563eb',muted:'#64748b',grid:'rgba(0,0,0,0.07)'};
+let PALETTE = {...PALETTE_DARK};
+
+let isLight = false;
+
+function toggleTheme() {
+  isLight = !isLight;
+  document.body.classList.toggle('light', isLight);
+  PALETTE = isLight ? {...PALETTE_LIGHT} : {...PALETTE_DARK};
+  Chart.defaults.color = PALETTE.muted;
+  // Save preference
+  try { localStorage.setItem('lm-theme', isLight ? 'light' : 'dark'); } catch(e) {}
+  // Re-render all charts with new palette
+  render();
+}
+
+// Restore saved theme preference
+try {
+  if (localStorage.getItem('lm-theme') === 'light') {
+    isLight = true;
+    document.body.classList.add('light');
+    PALETTE = {...PALETTE_LIGHT};
+  }
+} catch(e) {}
+
+Chart.defaults.color = PALETTE.muted;
+Chart.defaults.font.family = "'Barlow', sans-serif";
+
+function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+// ── FILTER ────────────────────────────────────────────────────
+function getFiltered() {
+  const from = document.getElementById('dateFrom').value;
+  const to   = document.getElementById('dateTo').value;
+  return RAW.filter(r => r.date && typeof r.date === 'string' && r.date >= from && r.date <= to);
+}
+
+// ── QUICK BUTTONS ─────────────────────────────────────────────
+function todayPT() {
+  return new Date().toLocaleDateString('en-CA', {timeZone: 'America/Los_Angeles'});
+}
+
+function yesterdayPT() {
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  return y.toLocaleDateString('en-CA', {timeZone: 'America/Los_Angeles'});
+}
+
+function quickSet(days, btn) {
+  document.querySelectorAll('.qbtn').forEach(b => b.classList.remove('active'));
+  (btn || event.target).classList.add('active');
+  const allDates = [...new Set(RAW.map(r=>r.date).filter(d => typeof d === 'string' && d.length === 10))].sort();
+  const first = allDates[0];
+  const last  = allDates[allDates.length-1];
+  let from, to, fallbackNote = null;
+
+  if (days === 0) {          // Hoy
+    const today = todayPT();
+    if (allDates.includes(today)) {
+      from = to = today;
+    } else {
+      from = to = last;  // fallback al último día disponible
+      fallbackNote = `Sin datos para hoy — mostrando último día disponible: ${_fmtDateShort(last)}`;
+    }
+  } else if (days === -1) {  // Ayer
+    const yesterday = yesterdayPT();
+    if (allDates.includes(yesterday)) {
+      from = to = yesterday;
+    } else {
+      // fallback al penúltimo día disponible
+      from = to = allDates.length >= 2 ? allDates[allDates.length - 2] : last;
+      fallbackNote = `Sin datos para ayer — mostrando día anterior disponible: ${_fmtDateShort(from)}`;
+    }
+  } else if (days >= 999) {  // Todo
+    from = first; to = last;
+  } else {
+    from = allDates[Math.max(0, allDates.length - days)]; to = last;
+  }
+
+  document.getElementById('dateFrom').value = from;
+  document.getElementById('dateTo').value   = to;
+
+  if (fallbackNote) showFallbackNote(fallbackNote);
+  else hideFallbackNote();
+
+  applyFilter();
+}
+
+function _fmtDateShort(d) {
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const [y,m,day] = d.split('-');
+  return `${parseInt(day)} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function showFallbackNote(msg) {
+  let el = document.getElementById('fallbackNote');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'fallbackNote';
+    el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel2);border:1px solid rgba(245,166,35,0.5);color:#f5a623;border-radius:16px;padding:28px 44px;font-size:15px;font-weight:600;z-index:999;transition:opacity .3s;white-space:nowrap;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.5);backdrop-filter:blur(6px);';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = '<div style="font-size:32px;margin-bottom:10px;">📭</div><div>Sin datos para el período seleccionado</div><div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:6px;">Intenta seleccionar otro rango de fechas</div>';
+  el.style.opacity = '1';
+  el.style.display = 'block';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => hideFallbackNote(), 3000);
+}
+
+function hideFallbackNote() {
+  const el = document.getElementById('fallbackNote');
+  if (el) { el.style.opacity = '0'; setTimeout(() => { el.style.display = 'none'; }, 300); }
+}
+
+function applyFilter() {
+  document.querySelectorAll('.qbtn').forEach(b => b.classList.remove('active'));
+  showSpinner();
+  setTimeout(() => { render(); hideSpinner(); }, 60);
+}
+
+function showSpinner() {
+  const el = document.getElementById('spinner') || document.getElementById('statusBanner');
+  if (el) el.classList.add('show');
+}
+function hideSpinner() {
+  const el = document.getElementById('spinner') || document.getElementById('statusBanner');
+  if (el) el.classList.remove('show');
+}
+
+// ── FORMAT DATE LABEL ─────────────────────────────────────────
+function fmtDateLabel(d) {
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const [y,m,day] = d.split('-');
+  return day+' '+months[parseInt(m)-1];
+}
+
+// ── MAIN RENDER ───────────────────────────────────────────────
+let _noDataTimer = null;
+function closeNoData() {
+  document.getElementById('noDataMsg').classList.remove('show');
+  if (_noDataTimer) { clearTimeout(_noDataTimer); _noDataTimer = null; }
+}
+
+function render() {
+  const data = getFiltered();
+  const from = document.getElementById('dateFrom').value;
+  const to   = document.getElementById('dateTo').value;
+
+  // Show no-data message if no records for selected range
+  const noDataEl = document.getElementById('noDataMsg');
+  if (data.length === 0) {
+    noDataEl.classList.add('show');
+    if (_noDataTimer) clearTimeout(_noDataTimer);
+    _noDataTimer = setTimeout(() => closeNoData(), 3000);
+    return;
+  }
+  noDataEl.classList.remove('show');
+
+  const confirmed = data.filter(r => r.transaction_status === 'CONFIRMED');
+  const cancelled = data.filter(r => r.transaction_status === 'CANCELLED');
+  const refunded  = data.filter(r => r.transaction_status === 'REFUNDED');
+
+  const totalGross = confirmed.reduce((s,r) => s+r.transaction_amount, 0);
+  const totalFees  = confirmed.reduce((s,r) => s+r.total_fee_amount, 0);
+  const totalNet   = confirmed.reduce((s,r) => s+r.net_amount_to_merchant, 0);
+  const avgTicket  = confirmed.length ? totalGross/confirmed.length : 0;
+  const avgFee     = confirmed.length ? confirmed.reduce((s,r)=>s+r.merchant_fee_percentage,0)/confirmed.length : 0;
+
+  // Period label
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function prettyDate(d) { const [y,m,day]=d.split('-'); return parseInt(day)+' '+months[parseInt(m)-1]+' '+y; }
+  const label = prettyDate(from)+' – '+prettyDate(to);
+  document.getElementById('periodLabel').textContent = label;
+  document.getElementById('footerPeriod').textContent = label;
+  document.getElementById('negocioSub').textContent = 'Análisis del período: '+label;
+
+  // KPIs
+  document.getElementById('kTxns').textContent   = confirmed.length.toLocaleString('es-MX');
+  document.getElementById('kTicket').textContent  = fmt(avgTicket);
+  document.getElementById('kGross').textContent   = fmt(totalGross);
+  document.getElementById('kFees').textContent    = fmt(totalFees);
+  document.getElementById('kNet').textContent     = fmt(totalNet);
+
+  // Stat cards
+  const total = data.length;
+  document.getElementById('sConfirmed').textContent = confirmed.length.toLocaleString('es-MX');
+  document.getElementById('sCancelled').textContent = cancelled.length.toLocaleString('es-MX');
+  document.getElementById('sCancelledPct').textContent = pct(cancelled.length,total)+' del total';
+  document.getElementById('sRefunded').textContent  = refunded.length.toLocaleString('es-MX');
+  document.getElementById('sRefundedPct').textContent = pct(refunded.length,total)+' del total';
+  document.getElementById('sAvgFee').textContent    = avgFee.toFixed(2)+'%';
+
+  // Events
+  document.getElementById('evCancelled').textContent = cancelled.length.toLocaleString('es-MX');
+  document.getElementById('evRefunded').textContent  = refunded.length.toLocaleString('es-MX');
+  document.getElementById('evSuccess').textContent   = pct(confirmed.length,total);
+  document.getElementById('evTotal').textContent     = total.toLocaleString('es-MX');
+
+  // ── DAILY CHART ─────────────────────────────────────────────
+  renderTrendChart(data);
+
+  // ── DOW CHART ────────────────────────────────────────────────
+  const dowMap = {};
+  DOW_ORDER.forEach(d => dowMap[d]=0);
+  confirmed.forEach(r => { if(dowMap[r.dow]!==undefined) dowMap[r.dow]+=r.transaction_amount; });
+  const dowVals = DOW_ORDER.map(d => dowMap[d]);
+  const maxDow = Math.max(...dowVals);
+  const bestDowIdx = dowVals.indexOf(maxDow);
+  const worstDowIdx = dowVals.indexOf(Math.min(...dowVals.filter(v=>v>0)));
+
+  document.getElementById('bestDay').textContent    = DOW_ES[DOW_ORDER[bestDowIdx]]||'—';
+  document.getElementById('bestDayAmt').textContent  = fmt(maxDow);
+  document.getElementById('worstDay').textContent   = dowVals.some(v=>v>0) ? DOW_ES[DOW_ORDER[worstDowIdx]]:'—';
+  document.getElementById('worstDayAmt').textContent = dowVals.some(v=>v>0) ? fmt(Math.min(...dowVals.filter(v=>v>0))):'—';
+
+  destroyChart('dow');
+  charts.dow = new Chart(document.getElementById('dowChart'), {
+    type:'bar',
+    data:{labels:DOW_SHORT,datasets:[{data:dowVals,backgroundColor:ctx=>ctx.dataIndex===bestDowIdx?PALETTE.teal:'rgba(59,130,246,0.35)',borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{display:false}}}
+  });
+
+  // ── HOUR CHART ───────────────────────────────────────────────
+  const hourMap = {};
+  confirmed.forEach(r => { hourMap[r.hour]=(hourMap[r.hour]||0)+r.transaction_amount; });
+  const hourKeys = Object.keys(hourMap).map(Number).sort((a,b)=>a-b);
+  const hourVals = hourKeys.map(h=>hourMap[h]);
+  const maxHour = Math.max(...hourVals);
+  const minHour = Math.min(...hourVals);
+  const bestHourIdx = hourVals.indexOf(maxHour);
+  const worstHourIdx = hourVals.indexOf(minHour);
+
+  document.getElementById('bestHour').textContent    = hourKeys[bestHourIdx]!==undefined ? hourKeys[bestHourIdx]+'h' : '—';
+  document.getElementById('bestHourAmt').textContent  = fmt(maxHour);
+  document.getElementById('worstHour').textContent   = hourKeys[worstHourIdx]!==undefined ? hourKeys[worstHourIdx]+'h' : '—';
+  document.getElementById('worstHourAmt').textContent = fmt(minHour);
+
+  destroyChart('hour');
+  charts.hour = new Chart(document.getElementById('hourChart'), {
+    type:'bar',
+    data:{labels:hourKeys.map(h=>h+'h'),datasets:[{data:hourVals,backgroundColor:ctx=>ctx.dataIndex===bestHourIdx?PALETTE.teal:'rgba(0,194,168,0.28)',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{display:false}}}
+  });
+
+  // ── CARD NETWORK TABLE ───────────────────────────────────────
+  const netMap = {};
+  confirmed.forEach(r => {
+    const k = r.card_type;
+    if(!netMap[k]) netMap[k]={count:0,gross:0,fees:0,net:0};
+    netMap[k].count++;
+    netMap[k].gross+=r.transaction_amount;
+    netMap[k].fees+=r.total_fee_amount;
+    netMap[k].net+=r.net_amount_to_merchant;
+  });
+  const netRows = Object.entries(netMap).sort((a,b)=>b[1].gross-a[1].gross);
+  const tBody = document.getElementById('cardNetTable');
+  tBody.innerHTML = netRows.map(([k,v])=>`
+    <tr>
+      <td><span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:${CARD_COLORS[k]||'#666'};display:inline-block;"></span>${k}</span></td>
+      <td class="td-right">${v.count.toLocaleString('es-MX')}</td>
+      <td class="td-right td-bold">${fmt(v.gross)}</td>
+      <td class="td-right td-red">−${v.fees.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</td>
+      <td class="td-right td-teal">${fmt(v.net)}</td>
+    </tr>`).join('');
+  document.getElementById('cardNetFoot').innerHTML = `<tr class="total-row"><td>Total</td><td class="td-right">${confirmed.length.toLocaleString('es-MX')}</td><td class="td-right">${fmt(totalGross)}</td><td class="td-right td-red">−${totalFees.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</td><td class="td-right td-teal">${fmt(totalNet)}</td></tr>`;
+
+  // ── CARD DONUT ───────────────────────────────────────────────
+  destroyChart('cardDonut');
+  const dColors = netRows.map(([k])=>CARD_COLORS[k]||'#666');
+  charts.cardDonut = new Chart(document.getElementById('cardDonut'),{
+    type:'doughnut',
+    data:{labels:netRows.map(([k])=>k),datasets:[{data:netRows.map(([,v])=>v.gross),backgroundColor:dColors,borderWidth:0,hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmt(ctx.raw)}}}}
+  });
+  document.getElementById('cardDonutLegend').innerHTML = netRows.map(([k,v])=>`
+    <div class="legend-item"><div class="legend-dot" style="background:${CARD_COLORS[k]||'#666'}"></div><span>${k}</span><span class="legend-pct" style="color:${CARD_COLORS[k]||'#666'}">${pct(v.gross,totalGross)}</span></div>`).join('');
+
+  // ── STATUS DONUT ──────────────────────────────────────────────
+  destroyChart('statusDonut');
+  const statGroups = {CONFIRMED:confirmed.length,CANCELLED:cancelled.length,REFUNDED:refunded.length};
+  const statLabels = {'CONFIRMED':'Confirmadas','CANCELLED':'Canceladas','REFUNDED':'Devueltas'};
+  charts.statusDonut = new Chart(document.getElementById('statusDonut'),{
+    type:'doughnut',
+    data:{labels:Object.keys(statGroups).map(k=>statLabels[k]),datasets:[{data:Object.values(statGroups),backgroundColor:Object.keys(statGroups).map(k=>STATUS_COLORS[k]),borderWidth:0,hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.label+': '+ctx.raw}}}}
+  });
+  document.getElementById('statusDonutLegend').innerHTML = Object.entries(statGroups).map(([k,v])=>`
+    <div class="legend-item"><div class="legend-dot" style="background:${STATUS_COLORS[k]}"></div><span>${statLabels[k]}</span><span class="legend-pct" style="color:${STATUS_COLORS[k]}">${pct(v,total)}</span></div>`).join('');
+
+  // ── BANKS ─────────────────────────────────────────────────────
+  const bankMap = {};
+  confirmed.forEach(r => {
+    const b = r.issuing_bank||'OTROS';
+    if(!bankMap[b]) bankMap[b]={count:0,gross:0};
+    bankMap[b].count++;
+    bankMap[b].gross+=r.transaction_amount;
+  });
+  const banks = Object.entries(bankMap).sort((a,b)=>b[1].gross-a[1].gross).slice(0,8);
+  const maxBank = banks[0]?.[1].gross||1;
+  document.getElementById('bankBars').innerHTML = banks.map(([name,v])=>`
+    <div class="bank-row">
+      <div class="bank-name">${name}</div>
+      <div class="bank-bar-wrap"><div class="bank-bar-fill" style="width:${(v.gross/maxBank*100).toFixed(1)}%"></div></div>
+      <div class="bank-count">${v.count}</div>
+      <div class="bank-amount">${fmt(v.gross)}</div>
+      <div class="bank-ticket" title="Ticket promedio">${fmt(v.count ? v.gross/v.count : 0)}</div>
+    </div>`).join('');
+
+  destroyChart('bankChart');
+  charts.bankChart = new Chart(document.getElementById('bankChart'),{
+    type:'bar',
+    data:{
+      labels:banks.map(([n])=>n),
+      datasets:[
+        {label:'Txns',data:banks.map(([,v])=>v.count),backgroundColor:'rgba(99,102,241,0.45)',borderColor:'#6366f1',borderWidth:1,borderRadius:5,yAxisID:'y1'},
+        {label:'Monto',data:banks.map(([,v])=>v.gross),type:'line',borderColor:PALETTE.teal,backgroundColor:'rgba(0,194,168,0.08)',fill:true,tension:0.4,borderWidth:2,pointRadius:3,pointBackgroundColor:PALETTE.teal,yAxisID:'y'},
+        {label:'Ticket Prom.',data:banks.map(([,v])=>v.count?v.gross/v.count:0),type:'line',borderColor:PALETTE.gold,backgroundColor:'transparent',fill:false,tension:0.4,borderWidth:1.5,borderDash:[4,3],pointRadius:3,pointBackgroundColor:PALETTE.gold,yAxisID:'y2'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{boxWidth:10,font:{size:11}}},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.label==='Monto')return ' Monto: '+fmt(ctx.raw);if(ctx.dataset.label==='Ticket Prom.')return ' Ticket Prom.: '+fmt(ctx.raw);return ' Txns: '+ctx.raw;}}}},
+      scales:{
+        x:{grid:{color:PALETTE.grid},ticks:{font:{size:10},maxRotation:30}},
+        y:{grid:{color:PALETTE.grid},position:'left',ticks:{callback:v=>fmt(v)}},
+        y1:{position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:10}}},
+        y2:{display:false,position:'right',grid:{drawOnChartArea:false}}
+      }
+    }
+  });
+
+  // ── FEE TABLE ─────────────────────────────────────────────────
+  const feeMap = {};
+  confirmed.forEach(r => {
+    const k = r.card_class;
+    if(!feeMap[k]) feeMap[k]={count:0,gross:0,fees:0,net:0,feeSum:0};
+    feeMap[k].count++;
+    feeMap[k].gross+=r.transaction_amount;
+    feeMap[k].fees+=r.total_fee_amount;
+    feeMap[k].net+=r.net_amount_to_merchant;
+    feeMap[k].feeSum+=r.merchant_fee_percentage;
+  });
+  const feeOrder = ['Débito','Crédito','Crédito Plus','Crédito Internacional'];
+  const feeRows = feeOrder.filter(k=>feeMap[k]).map(k=>[k,feeMap[k]]);
+  const barClasses = {'Débito':'','Crédito':'blue','Crédito Plus':'violet','Crédito Internacional':'gold'};
+
+  document.getElementById('feeTable').innerHTML = feeRows.map(([k,v])=>{
+    const effRate = v.count ? (v.feeSum/v.count).toFixed(2)+'%' : '—';
+    const avgTkt  = v.count ? fmt(v.gross/v.count) : '—';
+    const share = pct(v.gross,totalGross);
+    const barW = totalGross ? (v.gross/totalGross*100).toFixed(1) : 0;
+    return `<tr>
+      <td><span style="display:inline-flex;align-items:center;gap:8px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${TYPE_COLORS[k]};display:inline-block;"></span>
+        <span class="td-bold">${k}</span></span></td>
+      <td class="td-right">${v.count.toLocaleString('es-MX')}</td>
+      <td class="td-right td-bold">${fmt2(v.gross)}</td>
+      <td class="td-right">${avgTkt}</td>
+      <td class="td-right td-red">−${v.fees.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td class="td-right">${effRate}</td>
+      <td class="td-right td-teal">${fmt2(v.net)}</td>
+      <td class="td-right"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">${share}<div class="bar-track" style="width:55px;"><div class="bar-fill ${barClasses[k]}" style="width:${barW}%;"></div></div></div></td>
+    </tr>`;
+  }).join('');
+
+  const fTotal = feeRows.reduce((s,[,v])=>s+v.fees,0);
+  document.getElementById('feeFoot').innerHTML = `<tr class="total-row"><td>Total</td><td class="td-right">${confirmed.length.toLocaleString('es-MX')}</td><td class="td-right">${fmt2(totalGross)}</td><td class="td-right">${fmt(avgTicket)}</td><td class="td-right td-red">−${fTotal.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td class="td-right">${avgFee.toFixed(2)}%</td><td class="td-right td-teal">${fmt2(totalNet)}</td><td class="td-right">100%</td></tr>`;
+}
+
+// ── GROUPING STATE ────────────────────────────────────────────
+let currentGrouping = 'day';
+
+function setGrouping(g, btn) {
+  currentGrouping = g;
+  document.querySelectorAll('.grp-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const data = getFiltered();
+  renderTrendChart(data);
+}
+
+function getWeekKey(dateStr) {
+  const d = new Date(dateStr);
+  const day = d.getDay(); // 0=Sun
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+  const mon = new Date(d.setDate(diff));
+  return mon.toISOString().slice(0,10);
+}
+
+function getMonthKey(dateStr) {
+  return dateStr.slice(0,7); // YYYY-MM
+}
+
+function fmtWeekLabel(dateStr) {
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const [y,m,d] = dateStr.split('-');
+  // end of week
+  const start = new Date(dateStr);
+  const end = new Date(start); end.setDate(end.getDate()+6);
+  return parseInt(d)+' '+months[parseInt(m)-1]+' – '+end.getDate()+' '+months[end.getMonth()];
+}
+
+function fmtMonthLabel(key) {
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const [y,m] = key.split('-');
+  return months[parseInt(m)-1]+' '+y;
+}
+
+function renderTrendChart(confirmed_all) {
+  const confirmed = confirmed_all.filter(r => r.transaction_status === 'CONFIRMED');
+  const groupMap = {};
+
+  confirmed.forEach(r => {
+    let key;
+    if (currentGrouping === 'day') key = r.date;
+    else if (currentGrouping === 'week') key = getWeekKey(r.date);
+    else key = getMonthKey(r.date);
+
+    if (!groupMap[key]) groupMap[key] = {gross:0, count:0};
+    groupMap[key].gross += r.transaction_amount;
+    groupMap[key].count += 1;
+  });
+
+  const sortedKeys = Object.keys(groupMap).sort();
+  let labels;
+  if (currentGrouping === 'day') labels = sortedKeys.map(fmtDateLabel);
+  else if (currentGrouping === 'week') labels = sortedKeys.map(fmtWeekLabel);
+  else labels = sortedKeys.map(fmtMonthLabel);
+
+  const gGross  = sortedKeys.map(k => groupMap[k].gross);
+  const gCount  = sortedKeys.map(k => groupMap[k].count);
+  const gTicket = sortedKeys.map(k => groupMap[k].count ? groupMap[k].gross / groupMap[k].count : 0);
+
+  destroyChart('daily');
+  if (!sortedKeys.length) return;
+
+  charts.daily = new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label:'Bruto', data:gGross,
+          borderColor:PALETTE.teal, backgroundColor:'rgba(0,194,168,0.08)',
+          fill:true, tension:0.4, borderWidth:2,
+          pointRadius:sortedKeys.length>20?0:3, pointHoverRadius:5,
+          pointBackgroundColor:PALETTE.teal,
+          yAxisID:'y'
+        },
+        {
+          label:'Txns', data:gCount,
+          borderColor:PALETTE.gold, backgroundColor:'transparent',
+          fill:false, tension:0.4, borderWidth:1.5, borderDash:[4,3],
+          pointRadius:0, pointHoverRadius:4,
+          yAxisID:'y1'
+        },
+        {
+          label:'Ticket Prom.', data:gTicket,
+          borderColor:PALETTE.blue, backgroundColor:'transparent',
+          fill:false, tension:0.4, borderWidth:1.5, borderDash:[2,4],
+          pointRadius:0, pointHoverRadius:4,
+          yAxisID:'y2'
+        }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{intersect:false, mode:'index'},
+      plugins:{
+        legend:{
+          display:true, position:'top',
+          labels:{boxWidth:10, padding:14, font:{size:11}}
+        },
+        tooltip:{
+          callbacks:{
+            label: ctx => {
+              if (ctx.dataset.label === 'Bruto')       return '  Bruto: '        + fmt(ctx.raw);
+              if (ctx.dataset.label === 'Txns')        return '  Transacciones: ' + ctx.raw.toLocaleString('es-MX');
+              if (ctx.dataset.label === 'Ticket Prom.') return '  Ticket Prom.: '  + fmt(ctx.raw);
+              return ctx.dataset.label + ': ' + ctx.raw;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ grid:{color:PALETTE.grid}, ticks:{maxRotation:45, font:{size:10}, maxTicksLimit:14} },
+        y:{
+          grid:{color:PALETTE.grid}, position:'left',
+          ticks:{callback:v=>fmt(v), font:{size:10}}
+        },
+        y1:{
+          display:false, position:'right',
+          grid:{drawOnChartArea:false}
+        },
+        y2:{
+          display:false, position:'right',
+          grid:{drawOnChartArea:false}
+        }
+      }
+    }
+  });
+}
+
+
+// Render immediately from embedded data, then try to fetch fresh data
+// Set date input min/max from actual data range
+const _allDates = [...new Set(RAW.map(r=>r.date).filter(d => typeof d === 'string' && d.length === 10))].sort();
+const _minDate  = _allDates[0];
+const _maxDate  = _allDates[_allDates.length-1];
+document.getElementById('dateFrom').min   = _minDate;
+document.getElementById('dateFrom').max   = _maxDate;
+document.getElementById('dateFrom').value = _minDate;
+document.getElementById('dateTo').min     = _minDate;
+document.getElementById('dateTo').max     = _maxDate;
+document.getElementById('dateTo').value   = _maxDate;
+
+lastUpdated = new Date();
+updateLastUpdatedLabel();
+render();
+hideBanner();
+scheduleRefresh();
+</script>
+</body>
+</html>
