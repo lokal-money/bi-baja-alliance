@@ -409,6 +409,27 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
 }
 .terminal-select:focus { border-color: rgba(0,194,168,0.4); }
 
+
+/* ── EXPORT BUTTON ── */
+.btn-export {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent;
+  border: 1px solid rgba(0,194,168,0.4);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px; font-weight: 600;
+  color: var(--teal);
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+  white-space: nowrap;
+}
+.btn-export:hover {
+  background: rgba(0,194,168,0.1);
+  border-color: rgba(0,194,168,0.7);
+}
+.btn-export svg { width:14px; height:14px; }
+
 </style>
 </head>
 <body>
@@ -482,7 +503,13 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
     <div class="period-badge" id="periodLabel">20 Feb – 15 Mar 2026</div>
   </div>
 
-  <div class="theme-toggle" onclick="toggleTheme()" style="margin-left:20px;flex-shrink:0;">
+  <button class="btn-export" onclick="exportExcel()" title="Descargar Excel del período">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/>
+    </svg>
+    Excel
+  </button>
+  <div class="theme-toggle" onclick="toggleTheme()" style="margin-left:12px;flex-shrink:0;">
     <span class="t-label" id="darkLabel">🌙</span>
     <div class="toggle-track">
       <div class="toggle-thumb" id="toggleThumb">☀️</div>
@@ -1522,6 +1549,62 @@ function doLogin() {
     }, 100);
   }
 })();
+
+
+// ── EXPORT EXCEL ─────────────────────────────────────────────
+function exportExcel() {
+  const data = getFiltered();
+  if (!data.length) { alert('Sin datos para el período seleccionado'); return; }
+
+  const from = document.getElementById('dateFrom').value;
+  const to   = document.getElementById('dateTo').value;
+
+  // Column headers
+  const headers = [
+    'Fecha', 'Hora', 'Día', 'Estado', 'Monto', 'Comisión',
+    'Neto al Comercio', 'Red de Tarjeta', 'Banco Emisor',
+    '% Comisión', 'Tipo de Tarjeta', 'Modo de Entrada', 'Terminal'
+  ];
+
+  const days_es = {Monday:'Lunes',Tuesday:'Martes',Wednesday:'Miércoles',Thursday:'Jueves',Friday:'Viernes',Saturday:'Sábado',Sunday:'Domingo'};
+
+  const rows = data.map(r => [
+    r.date,
+    r.hour != null ? String(r.hour).padStart(2,'0') + ':00' : '',
+    days_es[r.dow] || r.dow || '',
+    r.transaction_status || '',
+    r.transaction_amount || 0,
+    r.total_fee_amount || 0,
+    r.net_amount_to_merchant || 0,
+    r.card_type || '',
+    r.issuing_bank || '',
+    r.merchant_fee_percentage || 0,
+    r.card_class || '',
+    r.card_entry_mode || '',
+    r.terminal_serial_number || '',
+  ]);
+
+  // Build CSV with BOM for Excel UTF-8 support
+  const bom = '﻿';
+  const escape = val => {
+    const s = String(val == null ? '' : val);
+    if (/[,"\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  };
+  const csv = bom +
+    [headers, ...rows].map(row => row.map(escape).join(',')).join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const merchant = document.querySelector('.merchant-name')?.textContent?.trim() || 'dashboard';
+  a.href     = url;
+  a.download = `${merchant.replace(/[^a-zA-Z0-9]/g,'_')}_${from}_${to}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 </script>
 </body>
