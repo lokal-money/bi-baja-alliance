@@ -515,22 +515,41 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
       </div>
     </div>
     <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">Tendencia de ventas (MXN)</div>
-          <div style="display:flex;gap:5px;">
-            <button class="grp-btn active" onclick="setGrouping('day',this)">Día</button>
-            <button class="grp-btn" onclick="setGrouping('week',this)">Semana</button>
-            <button class="grp-btn" onclick="setGrouping('month',this)">Mes</button>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="flex:1;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div class="card-title" style="margin-bottom:0;">Tendencia de ventas (MXN)</div>
+            <div style="display:flex;gap:5px;">
+              <button class="grp-btn active" onclick="setGrouping('day',this)">Día</button>
+              <button class="grp-btn" onclick="setGrouping('week',this)">Semana</button>
+              <button class="grp-btn" onclick="setGrouping('month',this)">Mes</button>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:165px;"><canvas id="dailyChart"></canvas></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div class="stat-card" style="padding:12px 14px;">
+            <div class="stat-label" style="font-size:10px;">Ventas confirmadas</div>
+            <div class="stat-value" id="sConfirmed" style="color:var(--teal);font-size:22px;">—</div>
+            <div class="stat-tag tag-green">✓ Confirmadas</div>
+          </div>
+          <div class="stat-card" style="padding:12px 14px;">
+            <div class="stat-label" style="font-size:10px;">Cancelaciones</div>
+            <div class="stat-value" id="sCancelled" style="color:var(--red);font-size:22px;">—</div>
+            <div class="stat-tag tag-red" id="sCancelledPct">—</div>
+          </div>
+          <div class="stat-card" style="padding:12px 14px;">
+            <div class="stat-label" style="font-size:10px;">Devoluciones</div>
+            <div class="stat-value" id="sRefunded" style="color:var(--gold);font-size:22px;">—</div>
+            <div class="stat-tag tag-gold" id="sRefundedPct">—</div>
           </div>
         </div>
-        <div class="chart-wrap" style="height:175px;"><canvas id="dailyChart"></canvas></div>
       </div>
       <div class="card">
         <div class="card-title">Movimiento semanal</div>
         <div class="mov-pair">
           <div class="mov-item best"><div class="mov-badge best">Mayor</div><div class="mov-name" id="bestDay">—</div><div class="mov-amount" id="bestDayAmt">—</div></div>
-          <div class="mov-item worst"><div class="mov-badge worst">Menor</div><div class="mov-name" id="worstDay">—</div><div class="mov-amount" id="worstDayAmt">—</div></div>
+          <div class="mov-item worst"><div class="mov-badge worst">Menor</div><div class="mov-name" id="worstDay">—</div><div class="mov-amount" id="worstHourAmt" style="display:none">—</div><div class="mov-amount" id="worstDayAmt">—</div></div>
         </div>
         <div style="margin-top:12px;"><div class="chart-wrap" style="height:76px;"><canvas id="dowChart"></canvas></div></div>
       </div>
@@ -538,16 +557,19 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
         <div class="card-title">Movimiento por hora</div>
         <div class="mov-pair">
           <div class="mov-item best"><div class="mov-badge best">Mayor</div><div class="mov-name" id="bestHour">—</div><div class="mov-amount" id="bestHourAmt">—</div></div>
-          <div class="mov-item worst"><div class="mov-badge worst">Menor</div><div class="mov-name" id="worstHour">—</div><div class="mov-amount" id="worstHourAmt">—</div></div>
+          <div class="mov-item worst"><div class="mov-badge worst">Menor</div><div class="mov-name" id="worstHour">—</div><div class="mov-amount" id="worstHourAmt2">—</div></div>
         </div>
         <div style="margin-top:12px;"><div class="chart-wrap" style="height:76px;"><canvas id="hourChart"></canvas></div></div>
       </div>
     </div>
-    <div class="grid-4">
-      <div class="stat-card"><div class="stat-label">Ventas confirmadas</div><div class="stat-value" id="sConfirmed" style="color:var(--teal)">—</div><div class="stat-tag tag-green">✓ Confirmadas</div></div>
-      <div class="stat-card"><div class="stat-label">Cancelaciones</div><div class="stat-value" id="sCancelled" style="color:var(--red)">—</div><div class="stat-tag tag-red" id="sCancelledPct">—</div></div>
-      <div class="stat-card"><div class="stat-label">Devoluciones</div><div class="stat-value" id="sRefunded" style="color:var(--gold)">—</div><div class="stat-tag tag-gold" id="sRefundedPct">—</div></div>
-      <div class="stat-card"><div class="stat-label">Comisión promedio</div><div class="stat-value" id="sAvgFee">—</div><div class="stat-tag tag-green">Tasa efectiva</div></div>
+
+    <!-- Terminal bar chart -->
+    <div class="card" style="margin-bottom:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="card-title" style="margin-bottom:0;">Ventas por terminal</div>
+        <div style="font-size:11px;color:var(--muted);" id="terminalPeriodLabel"></div>
+      </div>
+      <div id="terminalBars"></div>
     </div>
   </section>
 
@@ -994,7 +1016,6 @@ function render() {
   document.getElementById('sCancelledPct').textContent = pct(cancelled.length,total)+' del total';
   document.getElementById('sRefunded').textContent  = refunded.length.toLocaleString('es-MX');
   document.getElementById('sRefundedPct').textContent = pct(refunded.length,total)+' del total';
-  document.getElementById('sAvgFee').textContent    = avgFee.toFixed(2)+'%';
 
   // Events
   document.getElementById('evCancelled').textContent = cancelled.length.toLocaleString('es-MX');
