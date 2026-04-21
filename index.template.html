@@ -1570,7 +1570,7 @@ function exportExcel() {
 
   const rows = data.map(r => [
     r.date,
-    r.hour != null ? String(r.hour).padStart(2,'0') + ':00' : '',
+    r.time || (r.hour != null ? String(r.hour).padStart(2,'0') + ':00:00' : ''),
     days_es[r.dow] || r.dow || '',
     r.transaction_status || '',
     r.transaction_amount || 0,

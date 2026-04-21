@@ -75,12 +75,13 @@ def procesar_excel(path, merchant, tz_col):
         df = df.dropna(subset=["pt_dt"])
 
     df["date"]       = df["pt_dt"].dt.strftime("%Y-%m-%d")
+    df["time"]       = df["pt_dt"].dt.strftime("%H:%M:%S")
     df["hour"]       = df["pt_dt"].dt.hour
     df["dow"]        = df["pt_dt"].dt.day_name()
     df["card_class"] = df.apply(classify_card, axis=1)
 
     cols = [
-        "date", "hour", "dow",
+        "date", "time", "hour", "dow",
         "transaction_status", "transaction_amount",
         "total_fee_amount", "net_amount_to_merchant",
         "card_type", "issuing_bank",
