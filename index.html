@@ -1069,6 +1069,50 @@ function render() {
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{display:false}}}
   });
 
+  // ── TERMINAL BARS ─────────────────────────────────────────────
+  const terminalMap = {};
+  confirmed.forEach(r => {
+    const t = r.terminal_serial_number;
+    if (!t || t === 'nan' || t === 'None' || t === 'undefined' || t === '') return;
+    if (!terminalMap[t]) terminalMap[t] = {count:0, gross:0};
+    terminalMap[t].count++;
+    terminalMap[t].gross += r.transaction_amount;
+  });
+  const terminals = Object.entries(terminalMap).sort((a,b) => b[1].gross - a[1].gross);
+  const totalTerminalGross = terminals.reduce((s,[,v]) => s + v.gross, 0);
+  const maxTerminalGross   = terminals[0]?.[1].gross || 1;
+
+  const terminalBarsEl = document.getElementById('terminalBars');
+  if (terminalBarsEl) {
+    if (terminals.length === 0) {
+      terminalBarsEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0;">Sin datos de terminal para el período seleccionado</div>';
+    } else {
+      const tColors = ['#00c2a8','#3b82f6','#a78bfa','#f5a623','#e85d5d','#06b6d4','#84cc16','#f97316','#ec4899','#8b5cf6'];
+      terminalBarsEl.innerHTML = terminals.map(([name, v], i) => {
+        const pct  = totalTerminalGross > 0 ? (v.gross / totalTerminalGross * 100).toFixed(1) : '0.0';
+        const barW = (v.gross / maxTerminalGross * 100).toFixed(1);
+        const color = tColors[i % tColors.length];
+        return `<div class="bank-row">
+          <div class="bank-name" style="width:160px;font-size:11px;font-family:monospace;">${name}</div>
+          <div class="bank-bar-wrap">
+            <div class="bank-bar-fill" style="width:${barW}%;background:${color};"></div>
+          </div>
+          <div class="bank-count" style="width:48px;text-align:right;font-size:11px;color:var(--muted);">${pct}%</div>
+          <div class="bank-amount">${fmt(v.gross)}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  const terminalPeriodEl = document.getElementById('terminalPeriodLabel');
+  if (terminalPeriodEl) {
+    if (terminals.length > 0) {
+      terminalPeriodEl.textContent = `${terminals.length} terminal${terminals.length > 1 ? 'es' : ''} · ${fmt(totalTerminalGross)} total confirmado`;
+    } else {
+      terminalPeriodEl.textContent = '';
+    }
+  }
+
   // ── CARD NETWORK TABLE ───────────────────────────────────────
   const netMap = {};
   confirmed.forEach(r => {
