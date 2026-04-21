@@ -381,6 +381,29 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
   75%{transform:translateX(6px);}
 }
 
+
+/* ── TERMINAL SELECTOR ── */
+.terminal-wrap {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 0;
+}
+.terminal-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.7px; color: var(--muted); white-space: nowrap;
+}
+.terminal-select {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px; color: var(--text);
+  outline: none; cursor: pointer;
+  transition: border-color .2s;
+  max-width: 220px;
+}
+.terminal-select:focus { border-color: rgba(0,194,168,0.4); }
+
 </style>
 </head>
 <body>
@@ -476,10 +499,20 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
 
   <!-- MI NEGOCIO -->
   <section class="section">
-    <div class="section-header">
-      <div class="section-icon">📊</div>
-      <div class="section-title">Mi Negocio</div>
-      <div class="section-sub" id="negocioSub">Análisis del período seleccionado</div>
+    <div class="section-header" style="flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;">
+        <div class="section-icon">📊</div>
+        <div>
+          <div class="section-title">Mi Negocio</div>
+          <div class="section-sub" id="negocioSub">Análisis del período seleccionado</div>
+        </div>
+      </div>
+      <div class="terminal-wrap">
+        <span class="terminal-label">Terminal</span>
+        <select class="terminal-select" id="terminalSelect" onchange="applyFilter()">
+          <option value="">Todas</option>
+        </select>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
       <div class="card">
@@ -755,9 +788,15 @@ function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts
 
 // ── FILTER ────────────────────────────────────────────────────
 function getFiltered() {
-  const from = document.getElementById('dateFrom').value;
-  const to   = document.getElementById('dateTo').value;
-  return RAW.filter(r => r.date && typeof r.date === 'string' && r.date >= from && r.date <= to);
+  const from     = document.getElementById('dateFrom').value;
+  const to       = document.getElementById('dateTo').value;
+  const terminal = (document.getElementById('terminalSelect') || {}).value || '';
+  return RAW.filter(r => {
+    if (!r.date || typeof r.date !== 'string') return false;
+    if (r.date < from || r.date > to) return false;
+    if (terminal && r.terminal_serial_number !== terminal) return false;
+    return true;
+  });
 }
 
 // ── QUICK BUTTONS ─────────────────────────────────────────────
@@ -913,6 +952,17 @@ function render() {
   noDataEl.classList.remove('show');
 
   const confirmed = data.filter(r => r.transaction_status === 'CONFIRMED');
+
+  // ── POPULATE TERMINAL SELECTOR ──────────────────────────────
+  const terminalEl = document.getElementById('terminalSelect');
+  if (terminalEl) {
+    const currentVal = terminalEl.value;
+    const allTerminals = [...new Set(
+      RAW.map(r => r.terminal_serial_number).filter(t => t && t !== 'nan' && t !== 'None' && t !== 'undefined')
+    )].sort();
+    terminalEl.innerHTML = '<option value="">Todas</option>' +
+      allTerminals.map(t => `<option value="${t}"${t === currentVal ? ' selected' : ''}>${t}</option>`).join('');
+  }
   const cancelled = data.filter(r => r.transaction_status === 'CANCELLED');
   const refunded  = data.filter(r => r.transaction_status === 'REFUNDED');
 
