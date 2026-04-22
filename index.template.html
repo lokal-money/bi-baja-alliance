@@ -540,7 +540,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
         </div>
       </div>
       <div class="terminal-wrap">
-        <span class="terminal-label">Terminal</span>
+        <span class="terminal-label">Usuario</span>
         <select class="terminal-select" id="terminalSelect" onchange="applyFilter()">
           <option value="">Todas</option>
         </select>
@@ -598,7 +598,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
     <!-- Terminal bar chart -->
     <div class="card" style="margin-bottom:0;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div class="card-title" style="margin-bottom:0;">Ventas por terminal</div>
+        <div class="card-title" style="margin-bottom:0;">Ventas por usuario</div>
         <div style="font-size:11px;color:var(--muted);" id="terminalPeriodLabel"></div>
       </div>
       <div id="terminalBars"></div>
@@ -848,7 +848,7 @@ function getFiltered() {
   return RAW.filter(r => {
     if (!r.date || typeof r.date !== 'string') return false;
     if (r.date < from || r.date > to) return false;
-    if (terminal && r.terminal_serial_number !== terminal) return false;
+    if (terminal && (r.salesperson_username || r.terminal_serial_number || '') !== terminal) return false;
     return true;
   });
 }
@@ -1012,9 +1012,9 @@ function render() {
   if (terminalEl) {
     const currentVal = terminalEl.value;
     const allTerminals = [...new Set(
-      RAW.map(r => r.terminal_serial_number).filter(t => t && t !== 'nan' && t !== 'None' && t !== 'undefined')
+      RAW.map(r => r.salesperson_username || r.terminal_serial_number || '').filter(t => t && t !== 'nan' && t !== 'None' && t !== 'undefined')
     )].sort();
-    terminalEl.innerHTML = '<option value="">Todas</option>' +
+    terminalEl.innerHTML = '<option value="">Todos</option>' +
       allTerminals.map(t => `<option value="${t}"${t === currentVal ? ' selected' : ''}>${t}</option>`).join('');
   }
   const cancelled = data.filter(r => r.transaction_status === 'CANCELLED');
@@ -1101,31 +1101,32 @@ function render() {
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{display:false}}}
   });
 
-  // ── TERMINAL BARS ─────────────────────────────────────────────
-  const terminalMap = {};
+  // ── USUARIO BARS ─────────────────────────────────────────────
+  const userMap = {};
   confirmed.forEach(r => {
-    const t = r.terminal_serial_number;
-    if (!t || t === 'nan' || t === 'None' || t === 'undefined' || t === '') return;
-    if (!terminalMap[t]) terminalMap[t] = {count:0, gross:0};
-    terminalMap[t].count++;
-    terminalMap[t].gross += r.transaction_amount;
+    const u = r.salesperson_username || r.terminal_serial_number || '';
+    if (!u || u === 'nan' || u === 'None' || u === 'undefined') return;
+    if (!userMap[u]) userMap[u] = {count:0, gross:0, name: r.salesperson_name || u};
+    userMap[u].count++;
+    userMap[u].gross += r.transaction_amount;
   });
-  const terminals = Object.entries(terminalMap).sort((a,b) => b[1].gross - a[1].gross);
+  const terminals = Object.entries(userMap).sort((a,b) => b[1].gross - a[1].gross);
   const totalTerminalGross = terminals.reduce((s,[,v]) => s + v.gross, 0);
   const maxTerminalGross   = terminals[0]?.[1].gross || 1;
 
   const terminalBarsEl = document.getElementById('terminalBars');
   if (terminalBarsEl) {
     if (terminals.length === 0) {
-      terminalBarsEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0;">Sin datos de terminal para el período seleccionado</div>';
+      terminalBarsEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0;">Sin datos de usuario para el período seleccionado</div>';
     } else {
       const tColors = ['#00c2a8','#3b82f6','#a78bfa','#f5a623','#e85d5d','#06b6d4','#84cc16','#f97316','#ec4899','#8b5cf6'];
-      terminalBarsEl.innerHTML = terminals.map(([name, v], i) => {
+      terminalBarsEl.innerHTML = terminals.map(([username, v], i) => {
         const pct  = totalTerminalGross > 0 ? (v.gross / totalTerminalGross * 100).toFixed(1) : '0.0';
         const barW = (v.gross / maxTerminalGross * 100).toFixed(1);
         const color = tColors[i % tColors.length];
+        const label = v.name !== username ? `${v.name} <span style="color:var(--muted);font-size:10px;">(${username})</span>` : username;
         return `<div class="bank-row">
-          <div class="bank-name" style="width:160px;font-size:11px;font-family:monospace;">${name}</div>
+          <div class="bank-name" style="width:200px;font-size:11px;">${label}</div>
           <div class="bank-bar-wrap">
             <div class="bank-bar-fill" style="width:${barW}%;background:${color};"></div>
           </div>
@@ -1139,7 +1140,7 @@ function render() {
   const terminalPeriodEl = document.getElementById('terminalPeriodLabel');
   if (terminalPeriodEl) {
     if (terminals.length > 0) {
-      terminalPeriodEl.textContent = `${terminals.length} terminal${terminals.length > 1 ? 'es' : ''} · ${fmt(totalTerminalGross)} total confirmado`;
+      terminalPeriodEl.textContent = `${terminals.length} usuario${terminals.length > 1 ? 's' : ''} · ${fmt(totalTerminalGross)} total confirmado`;
     } else {
       terminalPeriodEl.textContent = '';
     }
