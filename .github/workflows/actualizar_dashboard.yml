@@ -2,7 +2,7 @@ name: Actualizar Dashboard
 
 on:
   schedule:
-    - cron: "0 * * * *"   # Cada hora
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,30 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
     permissions:
       contents: write
-
     steps:
-      - name: Checkout repositorio
-        uses: actions/checkout@v4.2.2
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5.6.0
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
         with:
           python-version: "3.11"
-
-      - name: Instalar dependencias
-        run: pip install urllib3
-
+      - run: pip install urllib3
       - name: Generar dashboard desde Compago API
         env:
           COMPAGO_API_KEY: ${{ secrets.COMPAGO_API_KEY }}
-        run: python fetch_compago.py "BAJA ALLIANCE " "UTC-7" "${{ secrets.DASHBOARD_PASSWORD }}" 365
-
-      - name: Commit index.html actualizado
-        run: |
-          git config user.name  "github-actions[bot]"
+        run: python fetch_compago.py "TORO ALIMENTOS" "UTC-7" "${{ secrets.DASHBOARD_PASSWORD }}" 365
+      - run: |
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet || git commit -m "Dashboard actualizado $(date +'%Y-%m-%d %H:%M UTC')"
