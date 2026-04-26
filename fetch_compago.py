@@ -77,13 +77,15 @@ print(f"Período: {date_from} → {date_to} | Zona: {tz_col}")
 def fetch_page(params):
     url = BASE_URL + "?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={"x-api-key": api_key})
-    for attempt in range(3):
+    for attempt in range(5):
         try:
-            with urllib.request.urlopen(req, timeout=30) as r:
+            with urllib.request.urlopen(req, timeout=60) as r:
                 return json.loads(r.read())
         except Exception as e:
-            if attempt == 2: raise
-            time.sleep(2)
+            if attempt == 4: raise
+            wait = (attempt + 1) * 5
+            print(f"  Reintento {attempt+1}/4 en {wait}s ({e})")
+            time.sleep(wait)
 
 def fetch_all(org_id=None):
     records = []
