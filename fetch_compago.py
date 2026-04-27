@@ -171,7 +171,7 @@ def transform(raw):
             "dow":                     dt_local.strftime("%A"),
             "transaction_status":      r.get("status", ""),
             "transaction_amount":      float(r.get("amount", 0)),
-            "total_fee_amount":        float(disb.get("feeAmount", 0)),
+            "total_fee_amount":        float(disb.get("feeAmount", 0)) + float(disb.get("merchantIvaFeeAmount", 0)),
             "net_amount_to_merchant":  float(disb.get("merchantTakeAmount", 0)),
             "card_type":               network,
             "issuing_bank":            card.get("issuingBank", "") or "",
