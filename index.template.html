@@ -1564,7 +1564,8 @@ function exportExcel() {
   const headers = [
     'Fecha', 'Hora', 'Día', 'Estado', 'Monto', 'Comisión',
     'Neto al Comercio', 'Red de Tarjeta', 'Banco Emisor',
-    '% Comisión', 'Tipo de Tarjeta', 'Modo de Entrada', 'Terminal'
+    '% Comisión', 'Tipo de Tarjeta', 'Modo de Entrada', 'Terminal',
+    'Vendedor', 'Sucursal'
   ];
 
   const days_es = {Monday:'Lunes',Tuesday:'Martes',Wednesday:'Miércoles',Thursday:'Jueves',Friday:'Viernes',Saturday:'Sábado',Sunday:'Domingo'};
@@ -1583,6 +1584,8 @@ function exportExcel() {
     r.card_class || '',
     r.card_entry_mode || '',
     r.terminal_serial_number || '',
+    r.salesperson_name || '',
+    r.business_store_branch || '',
   ]);
 
   // Build CSV with BOM for Excel UTF-8 support
