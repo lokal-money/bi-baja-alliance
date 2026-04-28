@@ -164,6 +164,7 @@ def transform(raw):
         fee_pct = disb.get("finalFeePercentageForMerchant", 0)
 
         salesperson = r.get("salesperson") or {}
+        branch      = r.get("businessStoreBranch") or {}
         rec = {
             "date":                    dt_local.strftime("%Y-%m-%d"),
             "time":                    dt_local.strftime("%H:%M:%S"),
@@ -179,8 +180,9 @@ def transform(raw):
             "card_class":              classify_card(funding, network, fee_pct),
             "card_entry_mode":         card.get("entryMode", "") or "",
             "terminal_serial_number":  term.get("serialNumber", "") or "",
-            "salesperson_username":    salesperson.get("username", "") or "",
-            "salesperson_name":        salesperson.get("name", "") or "",
+            "salesperson_username":          salesperson.get("username", "") or "",
+            "salesperson_name":              salesperson.get("name", "") or "",
+            "business_store_branch_name":    branch.get("name", "") or "",
         }
         if is_holding:
             rec["merchant"] = org_name.strip()
