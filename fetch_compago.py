@@ -90,7 +90,13 @@ def fetch_page(params):
 def fetch_all(org_id=None):
     records = []
     offset  = 0
+    start_time = time.time()
+    MAX_SECONDS = 300  # 5 minutos máximo total
     while True:
+        elapsed = time.time() - start_time
+        if elapsed > MAX_SECONDS:
+            print(f"  AVISO: Tiempo máximo ({MAX_SECONDS}s) alcanzado con {len(records)} registros. Continuando con datos parciales.")
+            break
         params = {
             "limit": PAGE_SIZE,
             "offset": offset,
@@ -103,7 +109,7 @@ def fetch_all(org_id=None):
         batch = d.get("data", [])
         records.extend(batch)
         count = d["pagination"]["count"]
-        print(f"  {len(records)} registros...")
+        print(f"  {len(records)} registros... ({int(elapsed)}s)")
         if count < PAGE_SIZE:
             break
         offset += PAGE_SIZE
