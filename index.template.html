@@ -598,7 +598,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
     <!-- Terminal bar chart -->
     <div class="card" style="margin-bottom:0;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div class="card-title" style="margin-bottom:0;">Ventas por usuario</div>
+        <div class="card-title" style="margin-bottom:0;" id="userSectionTitle">Ventas por usuario</div>
         <div style="font-size:11px;color:var(--muted);" id="terminalPeriodLabel"></div>
       </div>
       <div id="terminalBars"></div>
@@ -1101,12 +1101,18 @@ function render() {
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{display:false}}}
   });
 
-  // ── USUARIO BARS ─────────────────────────────────────────────
+  // ── USUARIO / MERCHANT BARS ───────────────────────────────────
+  const isHolding = confirmed.length > 0 && confirmed[0].merchant !== undefined;
+  const titleEl = document.getElementById('userSectionTitle');
+  if (titleEl) titleEl.textContent = isHolding ? 'Ventas por comercio' : 'Ventas por usuario';
+
   const userMap = {};
   confirmed.forEach(r => {
-    const u = r.salesperson_username || r.terminal_serial_number || '';
+    const u = isHolding
+      ? (r.merchant || '').trim()
+      : (r.salesperson_username || r.terminal_serial_number || '');
     if (!u || u === 'nan' || u === 'None' || u === 'undefined') return;
-    if (!userMap[u]) userMap[u] = {count:0, gross:0, name: r.salesperson_name || u};
+    if (!userMap[u]) userMap[u] = {count:0, gross:0, name: isHolding ? u : (r.salesperson_name || u)};
     userMap[u].count++;
     userMap[u].gross += r.transaction_amount;
   });
@@ -1140,7 +1146,9 @@ function render() {
   const terminalPeriodEl = document.getElementById('terminalPeriodLabel');
   if (terminalPeriodEl) {
     if (terminals.length > 0) {
-      terminalPeriodEl.textContent = `${terminals.length} usuario${terminals.length > 1 ? 's' : ''} · ${fmt(totalTerminalGross)} total confirmado`;
+      terminalPeriodEl.textContent = isHolding
+        ? `${terminals.length} comercio${terminals.length > 1 ? 's' : ''} · ${fmt(totalTerminalGross)} total confirmado`
+        : `${terminals.length} usuario${terminals.length > 1 ? 's' : ''} · ${fmt(totalTerminalGross)} total confirmado`;
     } else {
       terminalPeriodEl.textContent = '';
     }

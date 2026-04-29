@@ -91,7 +91,7 @@ def fetch_all(org_id=None):
     records = []
     offset  = 0
     start_time = time.time()
-    MAX_SECONDS = 300  # 5 minutos máximo total
+    MAX_SECONDS = 840 if is_holding else 300  # 14 min holding, 5 min individual
     while True:
         elapsed = time.time() - start_time
         if elapsed > MAX_SECONDS:
