@@ -71,19 +71,6 @@
       margin-top: -16px;
     }
 
-    /* ── QR ── */
-    .qr-wrap {
-      background: white;
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: 0 0 40px rgba(0,229,180,0.15);
-    }
-    #qr-canvas { display: block; }
-
-    .qr-caption {
-      font-size: 13px; color: var(--text-2);
-      text-align: center; margin-top: -8px;
-    }
 
     /* ── OPEN BUTTON ── */
     .btn-open {
@@ -186,11 +173,6 @@
   <div class="hero-title">Consulta tus <span>ventas del turno</span> desde tu celular</div>
   <div class="hero-sub">Escanea el código con tu cámara o toca el botón para abrir la app.</div>
 
-  <!-- QR -->
-  <div class="qr-wrap">
-    <canvas id="qr-canvas"></canvas>
-  </div>
-  <div class="qr-caption">Apunta la cámara de tu celular al código</div>
 
   <!-- Direct open button -->
   <a class="btn-open" href="./turno.html">
@@ -291,21 +273,8 @@
   </div>
 
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-  // Generate QR pointing to turno.html
-  const APP_URL = window.location.href.replace('instalar.html', 'turno.html');
-  new QRCode(document.getElementById('qr-canvas'), {
-    text: APP_URL,
-    width: 220,
-    height: 220,
-    colorDark: '#0b0f1a',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
-
-  // Device tabs
+// Device tabs
   function showPanel(name, btn) {
     document.querySelectorAll('[data-panel]').forEach(el => el.classList.remove('visible'));
     document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
