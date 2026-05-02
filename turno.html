@@ -523,11 +523,17 @@
 
   <!-- Bottom action bar -->
   <div class="bottom-bar">
+    <button class="btn-bar" id="today-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Hoy
+    </button>
     <button class="btn-bar" id="prev-btn">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M15 18l-6-6 6-6"/>
       </svg>
-      Turno anterior
+      Anterior
     </button>
     <button class="btn-bar" id="refresh-btn">
       <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -630,7 +636,8 @@
     const refreshBtn = $('refresh-btn');
     refreshBtn.classList.add('spinning');
     refreshBtn.disabled = true;
-    $('prev-btn').disabled = true;
+    $('prev-btn').disabled  = true;
+    $('today-btn').disabled = true;
     showState('loading');
     $('progress').style.width = '20%';
     $('loading-msg').textContent = shiftMode === 'previous' ? 'Cargando turno anterior...' : 'Obteniendo transacciones...';
@@ -663,9 +670,11 @@
       }
     } finally {
       refreshBtn.classList.remove('spinning');
-      refreshBtn.disabled = false;
-      $('prev-btn').disabled = false;
-      $('prev-btn').classList.toggle('active', shiftMode === 'previous');
+      refreshBtn.disabled     = false;
+      $('prev-btn').disabled  = false;
+      $('today-btn').disabled = false;
+      $('today-btn').classList.toggle('active', shiftMode === 'current');
+      $('prev-btn').classList.toggle('active',  shiftMode === 'previous');
     }
   }
 
@@ -755,15 +764,15 @@
     $('login-btn').disabled = n !== 6;
   }
 
-  function togglePrevShift() {
-    shiftMode = shiftMode === 'previous' ? 'current' : 'previous';
-    loadData();
-  }
+  function doRefresh() { loadData(); }
+  function goToday()   { shiftMode = 'current';  loadData(); }
+  function goPrev()    { shiftMode = 'previous'; loadData(); }
 
   $('login-btn').addEventListener('click', doLogin);
   $('back-btn').addEventListener('click', doBack);
-  $('refresh-btn').addEventListener('click', loadData);
-  $('prev-btn').addEventListener('click', togglePrevShift);
+  $('refresh-btn').addEventListener('click', doRefresh);
+  $('today-btn').addEventListener('click', goToday);
+  $('prev-btn').addEventListener('click', goPrev);
 
   $('serial-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('login-btn').disabled) doLogin(); });
   $('serial-input').addEventListener('input', function() {
