@@ -205,25 +205,34 @@
     }
 
     .terminal-pill {
-      flex: 1; text-align: center;
+      flex: 1; text-align: center; padding: 2px 8px;
     }
     .op-salesperson {
       font-family: 'Space Mono', monospace;
-      font-size: 12px; font-weight: 700;
+      font-size: 15px; font-weight: 700;
       color: var(--accent); letter-spacing: .5px;
     }
     .op-serial {
       font-family: 'Space Mono', monospace;
-      font-size: 10px; color: var(--text-2);
-      margin-top: 2px; letter-spacing: .5px;
+      font-size: 11px; color: var(--text-2);
+      margin-top: 3px; letter-spacing: .5px;
     }
 
-    .refresh-btn {
-      display: flex; align-items: center; gap: 6px;
+    .bottom-bar {
+      position: sticky; bottom: 0;
+      display: flex; gap: 10px;
+      padding: 12px 16px 20px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-bar {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
       background: var(--bg-raised);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 8px 14px;
+      border-radius: 12px;
+      padding: 12px 10px;
       color: var(--text);
       font-family: 'Space Grotesk', sans-serif;
       font-size: 13px; font-weight: 600;
@@ -232,10 +241,11 @@
       transition: background .15s;
       white-space: nowrap;
     }
-    .refresh-btn:active  { background: var(--border); }
-    .refresh-btn:disabled { opacity: .4; cursor: not-allowed; }
-    .refresh-icon        { transition: transform .15s; flex-shrink: 0; }
-    .refresh-btn.spinning .refresh-icon { animation: spin .7s linear infinite; }
+    .btn-bar:active   { background: var(--border); }
+    .btn-bar:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-bar.active   { border-color: var(--accent); color: var(--accent); }
+    .refresh-icon     { transition: transform .15s; flex-shrink: 0; }
+    .btn-bar.spinning .refresh-icon { animation: spin .7s linear infinite; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -458,14 +468,6 @@
       <div class="op-salesperson" id="op-salesperson">—</div>
       <div class="op-serial" id="op-serial">···</div>
     </div>
-
-    <button class="refresh-btn" id="refresh-btn" aria-label="Actualizar">
-      <svg class="refresh-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-      </svg>
-      Actualizar
-    </button>
   </div>
 
   <div class="content" id="content">
@@ -518,48 +520,53 @@
     </div>
 
   </div>
+
+  <!-- Bottom action bar -->
+  <div class="bottom-bar">
+    <button class="btn-bar" id="prev-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      Turno anterior
+    </button>
+    <button class="btn-bar" id="refresh-btn">
+      <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Actualizar
+    </button>
+  </div>
+
 </div>
 
 <script>
-  /* ═══════════════ CONFIG ═══════════════ */
   const API_KEY  = 'VWRASXuGiwiKcWQFZHKdjvyQmycjUepISAQKTLZNMOrPPJjBHmlwMBlsvaQqyVkU';
   const ORG_ID   = '82dd8ac0-8bf8-4c2e-8dce-f2c407c0410d';
   const BASE_URL = 'https://compago-proxy.rough-butterfly-3ee8.workers.dev/api/developer/payment';
-  const UTC_OFF  = -7; // TORO ALIMENTOS timezone
+  const UTC_OFF  = -7;
 
   let activeSerial = '';
+  let shiftMode    = 'current'; // 'current' | 'previous'
 
-  /* ═══════════════ UTILS ═══════════════ */
   const $ = id => document.getElementById(id);
+  function toUTC7(d) { return new Date(d.getTime() + UTC_OFF * 3600000); }
+  function pad(n)    { return String(n).padStart(2,'0'); }
+  function fmtMXN(n) { return n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
-  function toUTC7(d) {
-    return new Date(d.getTime() + UTC_OFF * 3600000);
-  }
-  function pad(n) { return String(n).padStart(2,'0'); }
-  function fmtMXN(n) {
-    return n.toLocaleString('es-MX',{ minimumFractionDigits:2, maximumFractionDigits:2 });
-  }
-
-  /* ═══════════════ SHIFT WINDOW ═══════════════ */
-  function shiftWindow() {
+  function shiftWindow(mode) {
     const now   = new Date();
     const local = toUTC7(now);
     const h     = local.getUTCHours();
-
-    // Reference calendar day in UTC-7 where the shift started
-    let refDay = new Date(local);
-    if (h < 8) refDay = new Date(refDay.getTime() - 86400000); // yesterday
-
-    // Shift start = refDay 08:00 UTC-7  →  convert to UTC (add 7h)
+    let refDay  = new Date(local);
+    if (h < 8) refDay = new Date(refDay.getTime() - 86400000);
+    if (mode === 'previous') refDay = new Date(refDay.getTime() - 86400000);
     const startUTC = new Date(Date.UTC(
       refDay.getUTCFullYear(), refDay.getUTCMonth(), refDay.getUTCDate(),
-      8 - UTC_OFF, 0, 0, 0   // 8 + 7 = 15 UTC
+      8 - UTC_OFF, 0, 0, 0
     ));
-    // Shift end = start + 24h - 1s
     const endUTC = new Date(startUTC.getTime() + 86400000 - 1000);
-    // API createdAtTo: add 1 extra day to account for API date offset quirk
     const apiEnd = new Date(endUTC.getTime() + 86400000);
-
     return { startUTC, endUTC, apiEnd };
   }
 
@@ -576,7 +583,6 @@
     return `${pad(l.getUTCHours())}:${pad(l.getUTCMinutes())}`;
   }
 
-  /* ═══════════════ CARD LOGIC ═══════════════ */
   function classifyCard(funding, network, feePct) {
     if (funding === 'DEBIT') return 'Débito';
     if (funding === 'CREDIT') {
@@ -591,70 +597,54 @@
   }
 
   const CARD_META = {
-    'Débito':                { cls: 'badge-debit',  abbr: 'DÉB' },
-    'Crédito':               { cls: 'badge-credit', abbr: 'CRÉ' },
-    'Crédito Plus':          { cls: 'badge-plus',   abbr: 'C+' },
-    'Crédito Internacional': { cls: 'badge-intl',   abbr: 'INT' },
-    'AMEX':                  { cls: 'badge-amex',   abbr: 'AMX' },
+    'Débito':                { cls:'badge-debit',  abbr:'DÉB' },
+    'Crédito':               { cls:'badge-credit', abbr:'CRÉ' },
+    'Crédito Plus':          { cls:'badge-plus',   abbr:'C+' },
+    'Crédito Internacional': { cls:'badge-intl',   abbr:'INT' },
+    'AMEX':                  { cls:'badge-amex',   abbr:'AMX' },
   };
 
-  /* ═══════════════ API FETCH ═══════════════ */
   async function fetchAll(startUTC, apiEnd) {
     const base = `${BASE_URL}?organizationId=${ORG_ID}&limit=100`
       + `&createdAtFrom=${encodeURIComponent(startUTC.toISOString())}`
       + `&createdAtTo=${encodeURIComponent(apiEnd.toISOString())}`;
-
     let all = [], offset = 0, page = 0;
-
     while (true) {
       const res = await fetch(`${base}&offset=${offset}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
       const json = await res.json();
       const items = json.data ?? json.results ?? json.payments ?? [];
       if (!items.length) break;
-
       all = all.concat(items);
       offset += items.length;
       page++;
-
-      // Update progress UI
-      $('loading-msg').textContent = `Página ${page} · ${all.length} registros obtenidos...`;
+      $('loading-msg').textContent = `Página ${page} · ${all.length} registros...`;
       $('progress').style.width = Math.min(88, 20 + page * 12) + '%';
-
       if (items.length < 100) break;
     }
-
     return all;
   }
 
-  /* ═══════════════ LOAD DATA ═══════════════ */
   async function loadData() {
+    if (!activeSerial) return;
     const refreshBtn = $('refresh-btn');
     refreshBtn.classList.add('spinning');
     refreshBtn.disabled = true;
-
+    $('prev-btn').disabled = true;
     showState('loading');
     $('progress').style.width = '20%';
-    $('loading-msg').textContent = 'Obteniendo transacciones...';
-
+    $('loading-msg').textContent = shiftMode === 'previous' ? 'Cargando turno anterior...' : 'Obteniendo transacciones...';
     try {
       if (!navigator.onLine) throw Object.assign(new Error('offline'), { code: 'offline' });
-
-      const { startUTC, endUTC, apiEnd } = shiftWindow();
+      const { startUTC, endUTC, apiEnd } = shiftWindow(shiftMode);
       const all = await fetchAll(startUTC, apiEnd);
-
-      // Filter: last 6 digits of numeric suffix match, CONFIRMED, within actual shift
       const mine = all.filter(t => {
         const numSuffix = (t.terminal?.serialNumber ?? '').replace(/^[A-Z]+/, '');
         const ts        = new Date(t.createdAt);
         return numSuffix.endsWith(activeSerial)
           && t.status === 'CONFIRMED'
-          && ts >= startUTC
-          && ts <= endUTC;
+          && ts >= startUTC && ts <= endUTC;
       });
-
-      // Validate serial exists anywhere in the fetched set
       const serialKnown = all.some(t =>
         (t.terminal?.serialNumber ?? '').replace(/^[A-Z]+/, '').endsWith(activeSerial)
       );
@@ -663,37 +653,35 @@
           `No se encontró ninguna terminal terminada en "${activeSerial}". Verifica los números e intenta de nuevo.`);
         return;
       }
-
       mine.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      renderDash(mine, startUTC, endUTC);
-
+      renderDash(mine, startUTC, endUTC, all);
     } catch (err) {
       if (err.code === 'offline' || err.message === 'offline') {
-        showError('📡', 'Sin conexión a internet',
-          'Se requiere conexión a internet para actualizar los datos del turno. Conéctate y vuelve a intentarlo.');
+        showError('📡', 'Sin conexión a internet', 'Se requiere conexión a internet para actualizar. Conéctate y vuelve a intentarlo.');
       } else {
-        showError('⚠️', 'Error al cargar datos',
-          `No se pudo conectar con el servidor (${err.message}). Intenta de nuevo en unos momentos.`);
+        showError('⚠️', 'Error al cargar datos', `No se pudo conectar con el servidor (${err.message}). Intenta de nuevo.`);
       }
     } finally {
       refreshBtn.classList.remove('spinning');
       refreshBtn.disabled = false;
+      $('prev-btn').disabled = false;
+      $('prev-btn').classList.toggle('active', shiftMode === 'previous');
     }
   }
 
-  /* ═══════════════ RENDER ═══════════════ */
-  function renderDash(txns, start, end) {
+  function renderDash(txns, start, end, all) {
     const total = txns.reduce((s, t) => s + (t.amount ?? 0), 0);
     const count = txns.length;
     const avg   = count ? total / count : 0;
 
-    $('total-val').textContent  = fmtMXN(total);
-    $('stat-count').textContent = count;
-    $('stat-avg').textContent   = '$' + fmtMXN(avg);
-    $('shift-range').textContent = fmtShiftRange(start, end);
+    $('total-eyebrow').textContent = shiftMode === 'previous' ? 'Turno Anterior · Confirmadas' : 'Turno Actual · Confirmadas';
+    $('total-val').textContent     = fmtMXN(total);
+    $('stat-count').textContent    = count;
+    $('stat-avg').textContent      = '$' + fmtMXN(avg);
+    $('shift-range').textContent   = fmtShiftRange(start, end);
 
-    // Populate operator info from first transaction with data
-    const ref = txns.find(t => t.terminal?.serialNumber);
+    const ref = txns.find(t => t.terminal?.serialNumber)
+      ?? (all || []).find(t => (t.terminal?.serialNumber ?? '').replace(/^[A-Z]+/, '').endsWith(activeSerial));
     if (ref) {
       $('op-salesperson').textContent = ref.salesperson?.username ?? '—';
       $('op-serial').textContent      = ref.terminal?.serialNumber ?? activeSerial;
@@ -701,12 +689,8 @@
 
     const list = $('txn-list');
     if (count === 0) {
-      list.innerHTML = `
-        <div class="state-box">
-          <div class="state-emoji">📋</div>
-          <div class="state-title">Sin ventas aún</div>
-          <div class="state-desc">No hay transacciones confirmadas en esta terminal durante el turno actual.</div>
-        </div>`;
+      const label = shiftMode === 'previous' ? 'en el turno anterior' : 'en el turno actual';
+      list.innerHTML = `<div class="state-box"><div class="state-emoji">📋</div><div class="state-title">Sin ventas</div><div class="state-desc">No hay transacciones confirmadas en esta terminal ${label}.</div></div>`;
     } else {
       list.innerHTML = txns.map((t, i) => {
         const funding = t.cardInformation?.fundingSource ?? '';
@@ -714,32 +698,18 @@
         const feePct  = t.paymentDisbursement?.finalFeePercentageForMerchant ?? 0;
         const type    = classifyCard(funding, network, feePct);
         const meta    = CARD_META[type] ?? { cls:'badge-credit', abbr:'?' };
-        const bank    = (t.cardInformation?.issuingBank ?? 'Banco desconocido')
-                          .replace(/^BANCO\s+/i, '').trim();
+        const bank    = (t.cardInformation?.issuingBank ?? 'Banco desconocido').replace(/^BANCO\s+/i, '').trim();
         const time    = fmtTime(t.createdAt);
         const delay   = Math.min(i * 0.04, 0.5);
-
-        return `
-          <div class="txn" style="animation-delay:${delay}s">
-            <div class="card-badge ${meta.cls}">${meta.abbr}</div>
-            <div class="txn-body">
-              <div class="txn-bank">${bank}</div>
-              <div class="txn-meta">${type}</div>
-              <div class="txn-time">${time}</div>
-            </div>
-            <div class="txn-amt">$${fmtMXN(t.amount ?? 0)}</div>
-          </div>`;
+        return `<div class="txn" style="animation-delay:${delay}s"><div class="card-badge ${meta.cls}">${meta.abbr}</div><div class="txn-body"><div class="txn-bank">${bank}</div><div class="txn-meta">${type}</div><div class="txn-time">${time}</div></div><div class="txn-amt">$${fmtMXN(t.amount ?? 0)}</div></div>`;
       }).join('');
     }
 
-    const now   = toUTC7(new Date());
-    $('last-update').textContent =
-      `Actualizado ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
-
+    const now = toUTC7(new Date());
+    $('last-update').textContent = `Actualizado ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
     showState('dash');
   }
 
-  /* ═══════════════ STATE HELPERS ═══════════════ */
   function showState(which) {
     $('state-loading').style.display = which === 'loading' ? 'flex'  : 'none';
     $('state-error').style.display   = which === 'error'   ? 'flex'  : 'none';
@@ -753,16 +723,14 @@
     showState('error');
   }
 
-  /* ═══════════════ LOGIN LOGIC ═══════════════ */
   function doLogin() {
     const val   = $('serial-input').value.trim();
     const errEl = $('login-error');
     const fail  = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
-
     if (!val || val.length !== 6) return fail('Ingresa exactamente 6 dígitos del serial.');
-
     errEl.style.display = 'none';
     activeSerial = val;
+    shiftMode    = 'current';
     $('op-salesperson').textContent = '···';
     $('op-serial').textContent      = `······${val}`;
     $('login-screen').style.display = 'none';
@@ -772,6 +740,7 @@
 
   function doBack() {
     activeSerial = '';
+    shiftMode    = 'current';
     $('serial-input').value = '';
     updateCounter('');
     $('main-screen').style.display  = 'none';
@@ -779,17 +748,22 @@
   }
 
   function updateCounter(val) {
-    const n = val.length;
+    const n  = val.length;
     const el = $('digit-counter');
     el.textContent = `${n} / 6 dígitos`;
-    el.className = 'digit-counter' + (n === 6 ? ' ready' : '');
+    el.className   = 'digit-counter' + (n === 6 ? ' ready' : '');
     $('login-btn').disabled = n !== 6;
   }
 
-  /* ═══════════════ EVENTS ═══════════════ */
+  function togglePrevShift() {
+    shiftMode = shiftMode === 'previous' ? 'current' : 'previous';
+    loadData();
+  }
+
   $('login-btn').addEventListener('click', doLogin);
   $('back-btn').addEventListener('click', doBack);
   $('refresh-btn').addEventListener('click', loadData);
+  $('prev-btn').addEventListener('click', togglePrevShift);
 
   $('serial-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('login-btn').disabled) doLogin(); });
   $('serial-input').addEventListener('input', function() {
