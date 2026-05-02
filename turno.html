@@ -652,14 +652,6 @@
           && t.status === 'CONFIRMED'
           && ts >= startUTC && ts <= endUTC;
       });
-      const serialKnown = all.some(t =>
-        (t.terminal?.serialNumber ?? '').replace(/^[A-Z]+/, '').endsWith(activeSerial)
-      );
-      if (!serialKnown && all.length > 0) {
-        showError('🔍', 'Serial no encontrado',
-          `No se encontró ninguna terminal terminada en "${activeSerial}". Verifica los números e intenta de nuevo.`);
-        return;
-      }
       mine.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       renderDash(mine, startUTC, endUTC, all);
     } catch (err) {
@@ -698,8 +690,10 @@
 
     const list = $('txn-list');
     if (count === 0) {
-      const label = shiftMode === 'previous' ? 'en el turno anterior' : 'en el turno actual';
-      list.innerHTML = `<div class="state-box"><div class="state-emoji">📋</div><div class="state-title">Sin ventas</div><div class="state-desc">No hay transacciones confirmadas en esta terminal ${label}.</div></div>`;
+      const hint = shiftMode === 'current'
+        ? '<br><br>Si tus ventas fueron antes de las 8:00am, toca <b>Anterior</b>.'
+        : '';
+      list.innerHTML = `<div class="state-box"><div class="state-emoji">📋</div><div class="state-title">Sin ventas</div><div class="state-desc">No hay transacciones confirmadas en esta terminal para este turno.${hint}</div></div>`;
     } else {
       list.innerHTML = txns.map((t, i) => {
         const funding = t.cardInformation?.fundingSource ?? '';
