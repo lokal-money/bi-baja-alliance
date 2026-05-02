@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0f1a">
+  <title>Lokal Money · Instalar app de Turno</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0b0f1a;
+      --card:     #131929;
+      --raised:   #1a2235;
+      --border:   #1e2d45;
+      --border-hi:#2a3f5f;
+      --accent:   #00e5b4;
+      --accent-dim:rgba(0,229,180,0.12);
+      --text:     #eef2ff;
+      --text-2:   #7a8caa;
+      --text-3:   #3a4d66;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    /* ── BRAND ── */
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 4px;
+    }
+    .brand-mark {
+      width: 48px; height: 48px;
+      background: var(--accent); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 17px; font-weight: 700; color: #0b0f1a;
+      box-shadow: 0 0 28px rgba(0,229,180,0.3);
+    }
+    .brand-text { line-height: 1.1; }
+    .brand-name { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+    .brand-sub  { font-size: 11px; color: var(--accent); letter-spacing: 2.5px; text-transform: uppercase; margin-top: 3px; }
+
+    .hero-title {
+      font-size: 28px; font-weight: 700;
+      letter-spacing: -.5px; text-align: center;
+      line-height: 1.2;
+    }
+    .hero-title span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: 15px; color: var(--text-2);
+      text-align: center; line-height: 1.6;
+      max-width: 320px;
+      margin-top: -16px;
+    }
+
+    /* ── QR ── */
+    .qr-wrap {
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 0 40px rgba(0,229,180,0.15);
+    }
+    #qr-canvas { display: block; }
+
+    .qr-caption {
+      font-size: 13px; color: var(--text-2);
+      text-align: center; margin-top: -8px;
+    }
+
+    /* ── OPEN BUTTON ── */
+    .btn-open {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      padding: 18px;
+      background: var(--accent); color: #0b0f1a;
+      border: none; border-radius: 16px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px; font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 24px rgba(0,229,180,0.3);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── STEPS ── */
+    .steps-card {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px 20px;
+    }
+
+    .steps-title {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--text-2); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .device-tabs {
+      display: flex; gap: 8px; margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1; padding: 10px;
+      background: var(--raised);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px; font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      text-align: center;
+      transition: all .2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .steps-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .step {
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .step-num {
+      width: 28px; height: 28px; flex-shrink: 0;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,229,180,.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px; font-weight: 700; color: var(--accent);
+    }
+    .step-text { padding-top: 4px; }
+    .step-text strong { font-size: 14px; font-weight: 600; color: var(--text); display: block; margin-bottom: 2px; }
+    .step-text span   { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+    .step-divider {
+      width: 1px; height: 10px;
+      background: var(--border);
+      margin-left: 13px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      font-size: 12px; color: var(--text-3);
+      text-align: center; line-height: 1.6;
+    }
+
+    /* Device panel visibility */
+    [data-panel] { display: none; }
+    [data-panel].visible { display: flex; flex-direction: column; gap: 0; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="brand">
+    <div class="brand-mark">L$</div>
+    <div class="brand-text">
+      <div class="brand-name">Lokal Money</div>
+      <div class="brand-sub">Operadores · Turno</div>
+    </div>
+  </div>
+
+  <div class="hero-title">Consulta tus <span>ventas del turno</span> desde tu celular</div>
+  <div class="hero-sub">Escanea el código con tu cámara o toca el botón para abrir la app.</div>
+
+  <!-- QR -->
+  <div class="qr-wrap">
+    <canvas id="qr-canvas"></canvas>
+  </div>
+  <div class="qr-caption">Apunta la cámara de tu celular al código</div>
+
+  <!-- Direct open button -->
+  <a class="btn-open" href="./turno.html">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+      <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+    </svg>
+    Abrir la app
+  </a>
+
+  <!-- Install steps -->
+  <div class="steps-card">
+    <div class="steps-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/>
+      </svg>
+      Cómo instalarla en tu celular
+    </div>
+
+    <div class="device-tabs">
+      <button class="tab active" onclick="showPanel('iphone', this)">📱 iPhone</button>
+      <button class="tab"        onclick="showPanel('android', this)">🤖 Android</button>
+    </div>
+
+    <!-- iPhone steps -->
+    <div data-panel="iphone" class="steps-list visible">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Abre en Safari</strong>
+          <span>Asegúrate de estar usando Safari (no Chrome ni otro navegador).</span>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Toca el botón de compartir</strong>
+          <span>Es el ícono de cuadro con flecha hacia arriba ↑ en la barra inferior.</span>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>Agregar a pantalla de inicio</strong>
+          <span>Desliza hacia abajo en el menú y toca "Agregar a pantalla de inicio".</span>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <strong>Toca "Agregar"</strong>
+          <span>Aparecerá el ícono de Lokal Money en tu pantalla como una app normal.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Android steps -->
+    <div data-panel="android" class="steps-list">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Abre en Chrome</strong>
+          <span>Asegúrate de estar usando Google Chrome.</span>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Toca el menú ⋮</strong>
+          <span>Son los tres puntos en la esquina superior derecha.</span>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>Añadir a pantalla de inicio</strong>
+          <span>Toca esa opción en el menú desplegable.</span>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <strong>Toca "Instalar"</strong>
+          <span>El ícono de Lokal Money quedará en tu pantalla de inicio.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Lokal Money · Solo para uso interno<br>TORO ALIMENTOS
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  // Generate QR pointing to turno.html
+  const APP_URL = window.location.href.replace('instalar.html', 'turno.html');
+  new QRCode(document.getElementById('qr-canvas'), {
+    text: APP_URL,
+    width: 220,
+    height: 220,
+    colorDark: '#0b0f1a',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // Device tabs
+  function showPanel(name, btn) {
+    document.querySelectorAll('[data-panel]').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.querySelector(`[data-panel="${name}"]`).classList.add('visible');
+    btn.classList.add('active');
+  }
+
+  // Auto-detect device and show correct tab
+  window.addEventListener('load', () => {
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      const tabs = document.querySelectorAll('.tab');
+      showPanel('android', tabs[1]);
+    }
+  });
+</script>
+</body>
+</html>
