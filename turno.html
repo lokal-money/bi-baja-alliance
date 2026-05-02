@@ -499,10 +499,6 @@
             <div class="stat-val" id="stat-count">0</div>
             <div class="stat-lbl">Transacciones</div>
           </div>
-          <div class="stat">
-            <div class="stat-val" id="stat-avg">$0</div>
-            <div class="stat-lbl">Ticket promedio</div>
-          </div>
         </div>
       </div>
 
@@ -673,12 +669,10 @@
   function renderDash(txns, start, end, all) {
     const total = txns.reduce((s, t) => s + (t.amount ?? 0), 0);
     const count = txns.length;
-    const avg   = count ? total / count : 0;
 
     $('total-eyebrow').textContent = shiftMode === 'previous' ? 'Turno Anterior · Confirmadas' : 'Turno Actual · Confirmadas';
     $('total-val').textContent     = fmtMXN(total);
     $('stat-count').textContent    = count;
-    $('stat-avg').textContent      = '$' + fmtMXN(avg);
     $('shift-range').textContent   = fmtShiftRange(start, end);
 
     const ref = txns.find(t => t.terminal?.serialNumber)
