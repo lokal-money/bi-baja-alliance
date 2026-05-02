@@ -426,13 +426,13 @@
       <div class="hint-icon">🔢</div>
       <div>
         <div class="hint-serial">
-          <span class="hint-letters">NCCA05</span><span class="hint-numbers">139588</span>
+          <span class="hint-letters">NCCA051</span><span class="hint-numbers">39588</span>
         </div>
-        <div class="hint-caption">Solo los últimos 6 dígitos</div>
+        <div class="hint-caption">Solo los últimos 5 dígitos</div>
       </div>
     </div>
 
-    <label class="field-label" for="serial-input">Últimos 6 dígitos del serial</label>
+    <label class="field-label" for="serial-input">Últimos 5 dígitos del serial</label>
     <input
       id="serial-input"
       class="serial-input"
@@ -443,7 +443,7 @@
       autocomplete="off"
       autocorrect="off"
       spellcheck="false"
-      maxlength="6"
+      maxlength="5"
     >
     <div class="digit-counter" id="digit-counter">0 / 6 dígitos</div>
 
@@ -736,12 +736,12 @@
     const val   = $('serial-input').value.trim();
     const errEl = $('login-error');
     const fail  = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
-    if (!val || val.length !== 6) return fail('Ingresa exactamente 6 dígitos del serial.');
+    if (!val || val.length !== 5) return fail('Ingresa exactamente 5 dígitos del serial.');
     errEl.style.display = 'none';
     activeSerial = val;
     shiftMode    = 'current';
     $('op-salesperson').textContent = '···';
-    $('op-serial').textContent      = `······${val}`;
+    $('op-serial').textContent      = `·····${val}`;
     $('login-screen').style.display = 'none';
     $('main-screen').style.display  = 'flex';
     loadData();
@@ -759,9 +759,9 @@
   function updateCounter(val) {
     const n  = val.length;
     const el = $('digit-counter');
-    el.textContent = `${n} / 6 dígitos`;
-    el.className   = 'digit-counter' + (n === 6 ? ' ready' : '');
-    $('login-btn').disabled = n !== 6;
+    el.textContent = `${n} / 5 dígitos`;
+    el.className   = 'digit-counter' + (n === 5 ? ' ready' : '');
+    $('login-btn').disabled = n !== 5;
   }
 
   function doRefresh() { loadData(); }
