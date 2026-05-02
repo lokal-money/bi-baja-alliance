@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b0f1a">
+  <title>Lokal Money · Turno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0b0f1a;
+      --bg-card:    #131929;
+      --bg-raised:  #1a2235;
+      --border:     #1e2d45;
+      --border-hi:  #2a3f5f;
+      --accent:     #00e5b4;
+      --accent-dim: rgba(0,229,180,0.12);
+      --accent-glow:rgba(0,229,180,0.25);
+      --text:       #eef2ff;
+      --text-2:     #7a8caa;
+      --text-3:     #3a4d66;
+      --debit:      #4da6ff;
+      --credit:     #b87eff;
+      --amex:       #ffb347;
+      --intl:       #ff6b6b;
+      --plus:       #d084ff;
+      --danger:     #ff5555;
+      --success:    #00e5b4;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── SCREENS ── */
+    .screen { min-height: 100dvh; display: flex; flex-direction: column; }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #login-screen::before {
+      content: '';
+      position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(0,229,180,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 52px;
+    }
+
+    .brand-mark {
+      width: 44px; height: 44px;
+      background: var(--accent);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 16px; font-weight: 700;
+      color: #0b0f1a;
+      letter-spacing: -1px;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .brand-text { line-height: 1.1; }
+    .brand-name { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+    .brand-tag  { font-size: 10px; color: var(--accent); letter-spacing: 2.5px; text-transform: uppercase; margin-top: 3px; }
+
+    .login-card {
+      width: 100%; max-width: 380px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px 28px;
+    }
+
+    .login-heading { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .login-sub     { font-size: 14px; color: var(--text-2); line-height: 1.55; margin-bottom: 28px; }
+
+    .hint-box {
+      background: var(--bg-raised);
+      border: 1px solid var(--border-hi);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      display: flex; gap: 12px; align-items: center;
+    }
+
+    .hint-icon { font-size: 18px; flex-shrink: 0; }
+
+    .hint-serial {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px; letter-spacing: 1px;
+      margin-bottom: 3px;
+    }
+    .hint-letters  { color: var(--text-3); text-decoration: line-through; }
+    .hint-numbers  { color: var(--accent); }
+    .hint-caption  { font-size: 11px; color: var(--text-2); }
+
+    .field-label {
+      display: block;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 10px;
+    }
+
+    .serial-input {
+      display: block; width: 100%;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 30px; font-weight: 700;
+      color: var(--text);
+      text-align: center;
+      letter-spacing: 5px;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      margin-bottom: 8px;
+    }
+
+    .serial-input::placeholder { color: var(--text-3); letter-spacing: 3px; font-size: 24px; }
+    .serial-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-dim);
+    }
+
+    .field-hint { font-size: 12px; color: var(--text-2); text-align: center; margin-bottom: 20px; }
+
+    .login-error {
+      font-size: 13px; color: var(--danger);
+      text-align: center;
+      margin-bottom: 16px;
+      min-height: 20px;
+      display: none;
+    }
+
+    .btn-go {
+      width: 100%; padding: 17px;
+      background-color: #00e5b4 !important;
+      color: #0b0f1a !important;
+      border: none; border-radius: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-go:active  { opacity: .85; transform: scale(.98); }
+    .btn-go:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+
+    .digit-counter {
+      text-align: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px; color: var(--text-3);
+      margin-bottom: 18px;
+      transition: color .2s;
+    }
+    .digit-counter.ready { color: var(--accent); }
+
+    /* ── MAIN SCREEN ── */
+    #main-screen {
+      display: none;
+      background: var(--bg);
+    }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      position: sticky; top: 0; z-index: 20;
+      gap: 8px;
+    }
+
+    .back-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: none; border: none;
+      color: var(--text-2); font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px; cursor: pointer;
+      padding: 6px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .terminal-pill {
+      flex: 1; text-align: center;
+    }
+    .op-salesperson {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px; font-weight: 700;
+      color: var(--accent); letter-spacing: .5px;
+    }
+    .op-serial {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px; color: var(--text-2);
+      margin-top: 2px; letter-spacing: .5px;
+    }
+
+    .refresh-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .refresh-btn:active  { background: var(--border); }
+    .refresh-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .refresh-icon        { transition: transform .15s; flex-shrink: 0; }
+    .refresh-btn.spinning .refresh-icon { animation: spin .7s linear infinite; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .content {
+      flex: 1;
+      padding: 20px 16px 40px;
+      max-width: 480px; margin: 0 auto; width: 100%;
+    }
+
+    /* ── TOTAL CARD ── */
+    .total-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 26px 24px 22px;
+      margin-bottom: 12px;
+      position: relative; overflow: hidden;
+    }
+    .total-card::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 60%);
+    }
+
+    .total-eyebrow {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--text-2); margin-bottom: 12px;
+    }
+
+    .total-number {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(40px, 11vw, 58px);
+      font-weight: 700; letter-spacing: -2px;
+      color: var(--text); line-height: 1;
+      margin-bottom: 20px;
+    }
+    .total-currency {
+      font-size: .45em; color: var(--text-2);
+      vertical-align: top; margin-top: 6px;
+      display: inline-block; margin-right: 3px;
+      letter-spacing: 0;
+    }
+
+    .total-stats {
+      display: flex; gap: 0;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .stat {
+      flex: 1;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .stat + .stat {
+      border-left: 1px solid var(--border);
+      padding-left: 16px;
+      margin-left: 16px;
+    }
+    .stat-val  { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--text); }
+    .stat-lbl  { font-size: 11px; color: var(--text-2); letter-spacing: .5px; }
+
+    /* ── SHIFT INFO ── */
+    .shift-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 16px;
+      margin-bottom: 24px;
+    }
+    .shift-lbl   { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-2); }
+    .shift-range { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent); }
+
+    /* ── TXN LIST ── */
+    .list-header {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--text-2);
+      padding: 0 4px; margin-bottom: 10px;
+    }
+
+    .txn-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .txn {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      animation: fadeUp .18s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-badge {
+      width: 42px; height: 42px;
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px; font-weight: 700;
+      flex-shrink: 0; letter-spacing: 0;
+    }
+    .badge-debit  { background: rgba(77,166,255,.14);  color: var(--debit); }
+    .badge-credit { background: rgba(184,126,255,.14); color: var(--credit); }
+    .badge-amex   { background: rgba(255,179,71,.14);  color: var(--amex); }
+    .badge-intl   { background: rgba(255,107,107,.14); color: var(--intl); }
+    .badge-plus   { background: rgba(208,132,255,.14); color: var(--plus); }
+
+    .txn-body { flex: 1; min-width: 0; }
+    .txn-bank {
+      font-size: 14px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: var(--text);
+    }
+    .txn-meta { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+    .txn-time { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    .txn-amt {
+      font-family: 'Space Mono', monospace;
+      font-size: 17px; font-weight: 700;
+      color: var(--text); text-align: right; white-space: nowrap;
+    }
+
+    /* ── STATES ── */
+    .state-box {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 56px 24px; text-align: center; gap: 14px;
+    }
+    .state-emoji { font-size: 36px; }
+    .state-title { font-size: 17px; font-weight: 700; }
+    .state-desc  { font-size: 14px; color: var(--text-2); line-height: 1.55; max-width: 280px; }
+
+    .spinner {
+      width: 42px; height: 42px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+
+    .progress-track {
+      width: 180px; height: 3px;
+      background: var(--border); border-radius: 2px; overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%; background: var(--accent); border-radius: 2px;
+      transition: width .3s;
+    }
+
+    .last-update {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; color: var(--text-3);
+      text-align: center; padding: 20px 0 4px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="login-screen" class="screen">
+  <div class="brand">
+    <div class="brand-mark">L$</div>
+    <div class="brand-text">
+      <div class="brand-name">Lokal Money</div>
+      <div class="brand-tag">Ventas · Turno</div>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <div class="login-heading">Ingresa tu terminal</div>
+    <div class="login-sub">Escribe los últimos 6 números del serial de tu terminal de cobro.</div>
+
+    <div class="hint-box">
+      <div class="hint-icon">🔢</div>
+      <div>
+        <div class="hint-serial">
+          <span class="hint-letters">NCCA05</span><span class="hint-numbers">139588</span>
+        </div>
+        <div class="hint-caption">Solo los últimos 6 dígitos</div>
+      </div>
+    </div>
+
+    <label class="field-label" for="serial-input">Últimos 6 dígitos del serial</label>
+    <input
+      id="serial-input"
+      class="serial-input"
+      type="tel"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      placeholder="_ _ _ _ _ _"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+      maxlength="6"
+    >
+    <div class="digit-counter" id="digit-counter">0 / 6 dígitos</div>
+
+    <div class="login-error" id="login-error"></div>
+
+    <button class="btn-go" id="login-btn" disabled>Ver ventas del turno →</button>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div id="main-screen" class="screen">
+
+  <div class="topbar">
+    <button class="back-btn" id="back-btn" aria-label="Salir">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Salir
+    </button>
+
+    <div class="terminal-pill">
+      <div class="op-salesperson" id="op-salesperson">—</div>
+      <div class="op-serial" id="op-serial">···</div>
+    </div>
+
+    <button class="refresh-btn" id="refresh-btn" aria-label="Actualizar">
+      <svg class="refresh-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Actualizar
+    </button>
+  </div>
+
+  <div class="content" id="content">
+
+    <!-- Loading -->
+    <div id="state-loading" class="state-box">
+      <div class="spinner"></div>
+      <div class="state-title">Consultando turno</div>
+      <div class="state-desc" id="loading-msg">Obteniendo transacciones...</div>
+      <div class="progress-track"><div class="progress-bar" id="progress" style="width:20%"></div></div>
+    </div>
+
+    <!-- Error -->
+    <div id="state-error" class="state-box" style="display:none">
+      <div class="state-emoji" id="err-icon">⚠️</div>
+      <div class="state-title" id="err-title">Error</div>
+      <div class="state-desc" id="err-desc"></div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="state-dash" style="display:none">
+
+      <!-- Total -->
+      <div class="total-card">
+        <div class="total-eyebrow">Total del Turno · Confirmadas</div>
+        <div class="total-number"><span class="total-currency">$</span><span id="total-val">0.00</span></div>
+        <div class="total-stats">
+          <div class="stat">
+            <div class="stat-val" id="stat-count">0</div>
+            <div class="stat-lbl">Transacciones</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" id="stat-avg">$0</div>
+            <div class="stat-lbl">Ticket promedio</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shift period -->
+      <div class="shift-bar">
+        <div class="shift-lbl">Período del turno</div>
+        <div class="shift-range" id="shift-range">—</div>
+      </div>
+
+      <!-- Txn list -->
+      <div class="list-header">Detalle de transacciones</div>
+      <div class="txn-list" id="txn-list"></div>
+
+      <div class="last-update" id="last-update"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* ═══════════════ CONFIG ═══════════════ */
+  const API_KEY  = 'VWRASXuGiwiKcWQFZHKdjvyQmycjUepISAQKTLZNMOrPPJjBHmlwMBlsvaQqyVkU';
+  const ORG_ID   = '82dd8ac0-8bf8-4c2e-8dce-f2c407c0410d';
+  const BASE_URL = 'https://api.honor.compago.com/api/developer/payment';
+  const UTC_OFF  = -7; // TORO ALIMENTOS timezone
+
+  let activeSerial = '';
+
+  /* ═══════════════ UTILS ═══════════════ */
+  const $ = id => document.getElementById(id);
+
+  function toUTC7(d) {
+    return new Date(d.getTime() + UTC_OFF * 3600000);
+  }
+  function pad(n) { return String(n).padStart(2,'0'); }
+  function fmtMXN(n) {
+    return n.toLocaleString('es-MX',{ minimumFractionDigits:2, maximumFractionDigits:2 });
+  }
+
+  /* ═══════════════ SHIFT WINDOW ═══════════════ */
+  function shiftWindow() {
+    const now   = new Date();
+    const local = toUTC7(now);
+    const h     = local.getUTCHours();
+
+    // Reference calendar day in UTC-7 where the shift started
+    let refDay = new Date(local);
+    if (h < 8) refDay = new Date(refDay.getTime() - 86400000); // yesterday
+
+    // Shift start = refDay 08:00 UTC-7  →  convert to UTC (add 7h)
+    const startUTC = new Date(Date.UTC(
+      refDay.getUTCFullYear(), refDay.getUTCMonth(), refDay.getUTCDate(),
+      8 - UTC_OFF, 0, 0, 0   // 8 + 7 = 15 UTC
+    ));
+    // Shift end = start + 24h - 1s
+    const endUTC = new Date(startUTC.getTime() + 86400000 - 1000);
+    // API createdAtTo: add 1 extra day to account for API date offset quirk
+    const apiEnd = new Date(endUTC.getTime() + 86400000);
+
+    return { startUTC, endUTC, apiEnd };
+  }
+
+  function fmtShiftRange(start, end) {
+    const fmt = d => {
+      const l = toUTC7(d);
+      return `${pad(l.getUTCDate())}/${pad(l.getUTCMonth()+1)} ${pad(l.getUTCHours())}:${pad(l.getUTCMinutes())}`;
+    };
+    return `${fmt(start)} — ${fmt(end)}`;
+  }
+
+  function fmtTime(isoStr) {
+    const l = toUTC7(new Date(isoStr));
+    return `${pad(l.getUTCHours())}:${pad(l.getUTCMinutes())}`;
+  }
+
+  /* ═══════════════ CARD LOGIC ═══════════════ */
+  function classifyCard(funding, network, feePct) {
+    if (funding === 'DEBIT') return 'Débito';
+    if (funding === 'CREDIT') {
+      if (network === 'AMEX')    return 'AMEX';
+      if (network === 'UNKNOWN') return 'Crédito Internacional';
+      return 'Crédito';
+    }
+    if (feePct <= 2.45) return 'Débito';
+    if (feePct <= 2.84) return 'Crédito';
+    if (feePct <= 2.99) return 'Crédito Plus';
+    return 'Crédito Internacional';
+  }
+
+  const CARD_META = {
+    'Débito':                { cls: 'badge-debit',  abbr: 'DÉB' },
+    'Crédito':               { cls: 'badge-credit', abbr: 'CRÉ' },
+    'Crédito Plus':          { cls: 'badge-plus',   abbr: 'C+' },
+    'Crédito Internacional': { cls: 'badge-intl',   abbr: 'INT' },
+    'AMEX':                  { cls: 'badge-amex',   abbr: 'AMX' },
+  };
+
+  /* ═══════════════ API FETCH ═══════════════ */
+  async function fetchAll(startUTC, apiEnd) {
+    const base = `${BASE_URL}?organizationId=${ORG_ID}&limit=100`
+      + `&createdAtFrom=${encodeURIComponent(startUTC.toISOString())}`
+      + `&createdAtTo=${encodeURIComponent(apiEnd.toISOString())}`;
+
+    let all = [], offset = 0, page = 0;
+
+    while (true) {
+      const res = await fetch(`${base}&offset=${offset}`, {
+        headers: { 'x-api-key': API_KEY }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const json = await res.json();
+      const items = json.data ?? json.results ?? json.payments ?? [];
+      if (!items.length) break;
+
+      all = all.concat(items);
+      offset += items.length;
+      page++;
+
+      // Update progress UI
+      $('loading-msg').textContent = `Página ${page} · ${all.length} registros obtenidos...`;
+      $('progress').style.width = Math.min(88, 20 + page * 12) + '%';
+
+      if (items.length < 100) break;
+    }
+
+    return all;
+  }
+
+  /* ═══════════════ LOAD DATA ═══════════════ */
+  async function loadData() {
+    const refreshBtn = $('refresh-btn');
+    refreshBtn.classList.add('spinning');
+    refreshBtn.disabled = true;
+
+    showState('loading');
+    $('progress').style.width = '20%';
+    $('loading-msg').textContent = 'Obteniendo transacciones...';
+
+    try {
+      if (!navigator.onLine) throw Object.assign(new Error('offline'), { code: 'offline' });
+
+      const { startUTC, endUTC, apiEnd } = shiftWindow();
+      const all = await fetchAll(startUTC, apiEnd);
+
+      // Filter: last 6 digits of numeric suffix match, CONFIRMED, within actual shift
+      const mine = all.filter(t => {
+        const numSuffix = (t.terminal?.serialNumber ?? '').replace(/^[A-Z]+/, '');
+        const ts        = new Date(t.createdAt);
+        return numSuffix.endsWith(activeSerial)
+          && t.status === 'CONFIRMED'
+          && ts >= startUTC
+          && ts <= endUTC;
+      });
+
+      // Validate serial exists anywhere in the fetched set
+      const serialKnown = all.some(t =>
+        (t.terminal?.serialNumber ?? '').replace(/^[A-Z]+/, '').endsWith(activeSerial)
+      );
+      if (!serialKnown && all.length > 0) {
+        showError('🔍', 'Serial no encontrado',
+          `No se encontró ninguna terminal terminada en "${activeSerial}". Verifica los números e intenta de nuevo.`);
+        return;
+      }
+
+      mine.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      renderDash(mine, startUTC, endUTC);
+
+    } catch (err) {
+      if (err.code === 'offline' || err.message === 'offline') {
+        showError('📡', 'Sin conexión a internet',
+          'Se requiere conexión a internet para actualizar los datos del turno. Conéctate y vuelve a intentarlo.');
+      } else {
+        showError('⚠️', 'Error al cargar datos',
+          `No se pudo conectar con el servidor (${err.message}). Intenta de nuevo en unos momentos.`);
+      }
+    } finally {
+      refreshBtn.classList.remove('spinning');
+      refreshBtn.disabled = false;
+    }
+  }
+
+  /* ═══════════════ RENDER ═══════════════ */
+  function renderDash(txns, start, end) {
+    const total = txns.reduce((s, t) => s + (t.amount ?? 0), 0);
+    const count = txns.length;
+    const avg   = count ? total / count : 0;
+
+    $('total-val').textContent  = fmtMXN(total);
+    $('stat-count').textContent = count;
+    $('stat-avg').textContent   = '$' + fmtMXN(avg);
+    $('shift-range').textContent = fmtShiftRange(start, end);
+
+    // Populate operator info from first transaction with data
+    const ref = txns.find(t => t.terminal?.serialNumber);
+    if (ref) {
+      $('op-salesperson').textContent = ref.salesperson?.username ?? '—';
+      $('op-serial').textContent      = ref.terminal?.serialNumber ?? activeSerial;
+    }
+
+    const list = $('txn-list');
+    if (count === 0) {
+      list.innerHTML = `
+        <div class="state-box">
+          <div class="state-emoji">📋</div>
+          <div class="state-title">Sin ventas aún</div>
+          <div class="state-desc">No hay transacciones confirmadas en esta terminal durante el turno actual.</div>
+        </div>`;
+    } else {
+      list.innerHTML = txns.map((t, i) => {
+        const funding = t.cardInformation?.fundingSource ?? '';
+        const network = t.cardInformation?.networkType   ?? '';
+        const feePct  = t.paymentDisbursement?.finalFeePercentageForMerchant ?? 0;
+        const type    = classifyCard(funding, network, feePct);
+        const meta    = CARD_META[type] ?? { cls:'badge-credit', abbr:'?' };
+        const bank    = (t.cardInformation?.issuingBank ?? 'Banco desconocido')
+                          .replace(/^BANCO\s+/i, '').trim();
+        const time    = fmtTime(t.createdAt);
+        const delay   = Math.min(i * 0.04, 0.5);
+
+        return `
+          <div class="txn" style="animation-delay:${delay}s">
+            <div class="card-badge ${meta.cls}">${meta.abbr}</div>
+            <div class="txn-body">
+              <div class="txn-bank">${bank}</div>
+              <div class="txn-meta">${type}</div>
+              <div class="txn-time">${time}</div>
+            </div>
+            <div class="txn-amt">$${fmtMXN(t.amount ?? 0)}</div>
+          </div>`;
+      }).join('');
+    }
+
+    const now   = toUTC7(new Date());
+    $('last-update').textContent =
+      `Actualizado ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
+
+    showState('dash');
+  }
+
+  /* ═══════════════ STATE HELPERS ═══════════════ */
+  function showState(which) {
+    $('state-loading').style.display = which === 'loading' ? 'flex'  : 'none';
+    $('state-error').style.display   = which === 'error'   ? 'flex'  : 'none';
+    $('state-dash').style.display    = which === 'dash'    ? 'block' : 'none';
+  }
+
+  function showError(icon, title, desc) {
+    $('err-icon').textContent  = icon;
+    $('err-title').textContent = title;
+    $('err-desc').textContent  = desc;
+    showState('error');
+  }
+
+  /* ═══════════════ LOGIN LOGIC ═══════════════ */
+  function doLogin() {
+    const val   = $('serial-input').value.trim();
+    const errEl = $('login-error');
+    const fail  = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
+
+    if (!val || val.length !== 6) return fail('Ingresa exactamente 6 dígitos del serial.');
+
+    errEl.style.display = 'none';
+    activeSerial = val;
+    $('op-salesperson').textContent = '···';
+    $('op-serial').textContent      = `······${val}`;
+    $('login-screen').style.display = 'none';
+    $('main-screen').style.display  = 'flex';
+    loadData();
+  }
+
+  function doBack() {
+    activeSerial = '';
+    $('serial-input').value = '';
+    updateCounter('');
+    $('main-screen').style.display  = 'none';
+    $('login-screen').style.display = 'flex';
+  }
+
+  function updateCounter(val) {
+    const n = val.length;
+    const el = $('digit-counter');
+    el.textContent = `${n} / 6 dígitos`;
+    el.className = 'digit-counter' + (n === 6 ? ' ready' : '');
+    $('login-btn').disabled = n !== 6;
+  }
+
+  /* ═══════════════ EVENTS ═══════════════ */
+  $('login-btn').addEventListener('click', doLogin);
+  $('back-btn').addEventListener('click', doBack);
+  $('refresh-btn').addEventListener('click', loadData);
+
+  $('serial-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('login-btn').disabled) doLogin(); });
+  $('serial-input').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    updateCounter(this.value);
+  });
+</script>
+</body>
+</html>
