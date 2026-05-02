@@ -607,9 +607,7 @@
     let all = [], offset = 0, page = 0;
 
     while (true) {
-      const res = await fetch(`${base}&offset=${offset}`, {
-        headers: { 'x-api-key': API_KEY }
-      });
+      const res = await fetch(`${base}&offset=${offset}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const json = await res.json();
