@@ -63,10 +63,10 @@ def update_html(last5_list):
     js_set = "new Set([" + ", ".join(f"'{x}'" for x in last5_list) + "])"
     new_line = f"  const VALID_SERIALS = {js_set};"
 
-    # Replace existing VALID_SERIALS line
+    # Replace existing VALID_SERIALS line - match from 'const VALID_SERIALS' to end of that statement
     updated = re.sub(
-        r'  const VALID_SERIALS = new Set\(\[.*?\]\);',
-        new_line,
+        r'const VALID_SERIALS\s*=\s*new Set\(\[[\s\S]*?\]\);',
+        f"const VALID_SERIALS = {js_set};",
         html
     )
 
