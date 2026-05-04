@@ -10,8 +10,8 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 # ── CONFIG ──────────────────────────────────────────────────────────────────
-SPREADSHEET_ID = '176ud6omcMAjjTJIqThJ66aLm_CjTZ6iSQATYaGI-FGU'
-SHEET_RANGE    = 'Relación!A:A'   # Solo la columna SERIAL
+SPREADSHEET_ID = '1pGxvTKanguPsOG8qy0RBHcv2t9TB9Z3COa8XEVjsNRk'
+SHEET_RANGE    = 'Data Base!A:A'   # Solo la columna SERIAL
 HTML_FILE      = 'turno.html'
 # ────────────────────────────────────────────────────────────────────────────
 
