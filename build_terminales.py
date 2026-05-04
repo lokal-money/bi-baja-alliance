@@ -521,7 +521,7 @@ function openModal(i){{
   // Device photo
   const devSec=document.getElementById('m-device-section');
   devSec.innerHTML=t.foto
-    ?'<div class="modal-device-img"><img src="'+esc(t.foto)+'" alt="'+esc(t.model)+'" onerror="this.parentElement.style.display=\'none\'"><div class="dev-info"><div class="dev-model">'+esc(t.model)+'</div><div class="dev-serial">'+esc(t.serial)+'</div></div></div>'
+    ?'<div class="modal-device-img"><img src="'+esc(t.foto)+'" alt="'+esc(t.model)+'"><div class="dev-info"><div class="dev-model">'+esc(t.model)+'</div><div class="dev-serial">'+esc(t.serial)+'</div></div></div>'
     :'';
 
   // QR
