@@ -58,24 +58,26 @@ def serials_to_last5(serials):
 
 def update_html(last5_list):
     with open(HTML_FILE, 'r') as f:
-        html = f.read()
+        lines = f.readlines()
 
     js_set = "new Set([" + ", ".join(f"'{x}'" for x in last5_list) + "])"
-    new_line = f"  const VALID_SERIALS = {js_set};"
+    new_line = f"  const VALID_SERIALS = {js_set};\n"
 
-    # Replace existing VALID_SERIALS line - match from 'const VALID_SERIALS' to end of that statement
-    updated = re.sub(
-        r'const VALID_SERIALS\s*=\s*new Set\(\[[\s\S]*?\]\);',
-        f"const VALID_SERIALS = {js_set};",
-        html
-    )
+    found = False
+    new_lines = []
+    for line in lines:
+        if 'const VALID_SERIALS' in line and 'new Set' in line:
+            new_lines.append(new_line)
+            found = True
+        else:
+            new_lines.append(line)
 
-    if updated == html:
+    if not found:
         print("⚠️  No se encontró VALID_SERIALS en turno.html — verifica el archivo")
         sys.exit(1)
 
     with open(HTML_FILE, 'w') as f:
-        f.write(updated)
+        f.writelines(new_lines)
 
     print(f"✅ Lista blanca actualizada: {len(last5_list)} seriales")
 
