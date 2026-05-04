@@ -1,0 +1,40 @@
+name: Actualizar lista de terminales
+
+on:
+  schedule:
+    - cron: "0 14 * * 1"   # Cada lunes a las 8am UTC-6 (14:00 UTC)
+  workflow_dispatch:         # Permite disparo manual desde el portal
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install google-auth google-auth-httplib2 google-api-python-client
+
+      - name: Actualizar lista blanca de seriales
+        env:
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+        run: python actualizar_seriales.py
+
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add turno.html
+          if git diff --cached --quiet; then
+            echo "Sin cambios en la lista de seriales"
+          else
+            git commit -m "Auto: actualizar lista blanca de terminales"
+            git push
+          fi
