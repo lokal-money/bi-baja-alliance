@@ -339,6 +339,17 @@ const ACCESS_PASSWORD = {password};
 {data_js}
 
 // ── Auth ──────────────────────────────────────────────────────────────────
+// SSO: auto-login si viene contraseña en el hash de la URL
+(function(){{
+  const hash = decodeURIComponent(window.location.hash.slice(1));
+  if(hash && hash === ACCESS_PASSWORD){{
+    history.replaceState(null,'',window.location.pathname);
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  }}
+}})();
+
 function doLogin(){{
   if(document.getElementById('pw-input').value===ACCESS_PASSWORD){{
     document.getElementById('login-err').style.display='none';
