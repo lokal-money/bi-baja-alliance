@@ -110,6 +110,7 @@ main{padding:1.5rem;max-width:1440px;margin:0 auto}
 #modal.open{display:flex}
 .modal-box{background:var(--surface);border-radius:var(--r-lg);width:100%;max-width:500px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.22);animation:modal-in .18s ease}
 @keyframes modal-in{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .modal-hdr{padding:1.25rem 1.5rem 1rem;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
 .modal-serial{font-family:var(--mono);font-size:15px;font-weight:600;letter-spacing:.5px}
 .modal-pos{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:3px}
@@ -577,7 +578,6 @@ function downloadQR(){
   a.click();
 }
 
-@keyframes spin{to{transform:rotate(360deg)}}
 
 async function dispatchUpdate() {
   const btn   = document.getElementById('update-btn');
