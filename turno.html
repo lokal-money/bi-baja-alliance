@@ -644,6 +644,12 @@
     return all;
   }
 
+  const VALID_SERIALS = new Set(['05208', '05209', '05255', '05256', '05257', '05258', '05260', '05262', '05263', '05264', '05395', '05396', '05397', '05398', '05399', '05400', '05401', '05402', '05403', '05404', '08999', '09000', '09002', '09003', '09004', '09007', '09008', '09012', '09013', '09016', '09017', '38274', '38275', '38276', '38277', '38278', '38279', '38280', '38281', '38282', '38283', '38454', '38456', '38579', '38580', '38581', '39471', '39472', '39521', '39522', '39523', '39524', '39526', '39527', '39528', '39529', '39530', '39531', '39532', '39533', '39534', '39535', '39536', '39537', '39538', '39539', '39540', '39541', '39542', '39543', '39544', '39545', '39546', '39547', '39548', '39549', '39550', '39586', '39587', '39588', '39589', '39641', '39642', '39643', '39644', '39645', '39646', '39647', '39648', '39650', '83596']);
+
+  function validateSerial(serial) {
+    return VALID_SERIALS.has(serial);
+  }
+
   async function loadData() {
     if (!activeSerial) return;
     const refreshBtn = $('refresh-btn');
@@ -656,6 +662,16 @@
     $('loading-msg').textContent = shiftMode === 'previous' ? 'Cargando turno anterior...' : 'Obteniendo transacciones...';
     try {
       if (!navigator.onLine) throw Object.assign(new Error('offline'), { code: 'offline' });
+
+      // Validate serial against last 7 days before loading shift
+      $('loading-msg').textContent = 'Validando terminal...';
+      const known = validateSerial(activeSerial);
+      if (!known) {
+        showError('🔍', 'Serial no encontrado',
+          `No se encontró ninguna terminal con serial terminado en "${activeSerial}". Verifica los números e intenta de nuevo.`);
+        return;
+      }
+
       const { startUTC, endUTC, apiEnd } = shiftWindow(shiftMode);
       const all = await fetchAll(startUTC, apiEnd);
       const mine = all.filter(t => {
