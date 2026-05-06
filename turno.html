@@ -525,11 +525,17 @@
       </svg>
       Hoy
     </button>
+    <button class="btn-bar" id="prev2-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 18l-6-6 6-6"/><path d="M17 18l-6-6 6-6"/>
+      </svg>
+      <span id="prev2-label">Hace 2 días</span>
+    </button>
     <button class="btn-bar" id="prev-btn">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M15 18l-6-6 6-6"/>
       </svg>
-      Anterior
+      <span id="prev-label">Anterior</span>
     </button>
     <button class="btn-bar" id="refresh-btn">
       <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -566,7 +572,7 @@
   const UTC_OFF  = -7;
 
   let activeSerial = '';
-  let shiftMode    = 'current'; // 'current' | 'previous'
+  let shiftMode    = 'current'; // 'current' | 'previous' | 'prev2'
 
   const $ = id => document.getElementById(id);
   function toUTC7(d) { return new Date(d.getTime() + UTC_OFF * 3600000); }
@@ -580,6 +586,7 @@
     let refDay  = new Date(local);
     if (h < 8) refDay = new Date(refDay.getTime() - 86400000);
     if (mode === 'previous') refDay = new Date(refDay.getTime() - 86400000);
+    if (mode === 'prev2')    refDay = new Date(refDay.getTime() - 86400000 * 2);
     const startUTC = new Date(Date.UTC(
       refDay.getUTCFullYear(), refDay.getUTCMonth(), refDay.getUTCDate(),
       8 - UTC_OFF, 0, 0, 0
@@ -657,9 +664,10 @@
     refreshBtn.disabled = true;
     $('prev-btn').disabled  = true;
     $('today-btn').disabled = true;
+    $('prev2-btn').disabled = true;
     showState('loading');
     $('progress').style.width = '20%';
-    $('loading-msg').textContent = shiftMode === 'previous' ? 'Cargando turno anterior...' : 'Obteniendo transacciones...';
+    $('loading-msg').textContent = shiftMode === 'previous' ? 'Cargando turno anterior...' : shiftMode === 'prev2' ? 'Cargando hace 2 días...' : 'Obteniendo transacciones...';
     try {
       if (!navigator.onLine) throw Object.assign(new Error('offline'), { code: 'offline' });
 
@@ -694,8 +702,10 @@
       refreshBtn.disabled     = false;
       $('prev-btn').disabled  = false;
       $('today-btn').disabled = false;
+      $('prev2-btn').disabled = false;
       $('today-btn').classList.toggle('active', shiftMode === 'current');
       $('prev-btn').classList.toggle('active',  shiftMode === 'previous');
+      $('prev2-btn').classList.toggle('active', shiftMode === 'prev2');
     }
   }
 
@@ -703,7 +713,7 @@
     const total = txns.reduce((s, t) => s + (t.amount ?? 0), 0);
     const count = txns.length;
 
-    $('total-eyebrow').textContent = shiftMode === 'previous' ? 'Turno Anterior · Confirmadas' : 'Turno Actual · Confirmadas';
+    $('total-eyebrow').textContent = shiftMode === 'previous' ? 'Turno Anterior · Confirmadas' : shiftMode === 'prev2' ? 'Hace 2 Días · Confirmadas' : 'Turno Actual · Confirmadas';
     $('total-val').textContent     = fmtMXN(total);
     $('stat-count').textContent    = count;
     $('shift-range').textContent   = fmtShiftRange(start, end);
@@ -757,6 +767,27 @@
     showState('error');
   }
 
+
+  const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+  function shiftDateLabel(mode) {
+    const now   = new Date();
+    const local = toUTC7(now);
+    const h     = local.getUTCHours();
+    let refDay  = new Date(local);
+    if (h < 8) refDay = new Date(refDay.getTime() - 86400000);
+    if (mode === 'previous') refDay = new Date(refDay.getTime() - 86400000);
+    if (mode === 'prev2')    refDay = new Date(refDay.getTime() - 86400000 * 2);
+    const dow = DAYS_ES[refDay.getUTCDay()];
+    const d   = String(refDay.getUTCDate()).padStart(2,'0');
+    const m   = String(refDay.getUTCMonth()+1).padStart(2,'0');
+    return `${dow} ${d}/${m}`;
+  }
+
+  function updateShiftLabels() {
+    $('prev-label').textContent  = shiftDateLabel('previous');
+    $('prev2-label').textContent = shiftDateLabel('prev2');
+  }
   function doLogin() {
     const val   = $('serial-input').value.trim();
     const errEl = $('login-error');
@@ -769,6 +800,7 @@
     $('op-serial').textContent      = `·····${val}`;
     $('login-screen').style.display = 'none';
     $('main-screen').style.display  = 'flex';
+    updateShiftLabels();
     loadData();
   }
 
@@ -792,12 +824,14 @@
   function doRefresh() { loadData(); }
   function goToday()   { shiftMode = 'current';  loadData(); }
   function goPrev()    { shiftMode = 'previous'; loadData(); }
+  function goPrev2()   { shiftMode = 'prev2';    loadData(); }
 
   $('login-btn').addEventListener('click', doLogin);
   $('back-btn').addEventListener('click', doBack);
   $('refresh-btn').addEventListener('click', doRefresh);
   $('today-btn').addEventListener('click', goToday);
   $('prev-btn').addEventListener('click', goPrev);
+  $('prev2-btn').addEventListener('click', goPrev2);
 
   $('serial-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('login-btn').disabled) doLogin(); });
   $('serial-input').addEventListener('input', function() {
