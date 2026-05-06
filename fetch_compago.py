@@ -47,6 +47,11 @@ ORG_IDS = {
     "YAAKUNAJ":                              None,
 }
 
+# ── DISPLAY NAMES (override API name in dashboard header) ────────
+DISPLAY_NAMES = {
+    "TORO ALIMENTOS": "BAJA ALLIANCE",
+}
+
 # ── ARGS ──────────────────────────────────────────────────────────
 merchant   = sys.argv[1] if len(sys.argv) > 1 else "HOGAZA HOGAZA"
 tz_col     = sys.argv[2] if len(sys.argv) > 2 else "UTC-6"
@@ -401,7 +406,7 @@ def generate_html(records, password, merchant_display):
 if __name__ == "__main__":
     org_id   = ORG_IDS.get(merchant) if not is_holding else None
     org_name = None if is_holding else merchant
-    display  = "LOKAL MONEY HOLDING" if is_holding else merchant
+    display  = "LOKAL MONEY HOLDING" if is_holding else DISPLAY_NAMES.get(merchant, merchant)
 
     print(f"Modo: {'HOLDING' if is_holding else merchant} | Zona: {tz_col}")
 
