@@ -1109,16 +1109,32 @@ function render() {
   const terminalBarsEl = document.getElementById('terminalBars');
   if (terminalBarsEl) {
     if (terminals.length === 0) {
-      terminalBarsEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0;">Sin datos de usuario para el período seleccionado</div>';
+      terminalBarsEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0;">Sin datos para el período seleccionado</div>';
     } else {
       const tColors = ['#00c2a8','#3b82f6','#a78bfa','#f5a623','#e85d5d','#06b6d4','#84cc16','#f97316','#ec4899','#8b5cf6'];
-      terminalBarsEl.innerHTML = terminals.map(([username, v], i) => {
+
+      // Holding: apply Pareto 80%, Individual: show all
+      let displayList = terminals;
+      let othersGross = 0;
+      if (isHolding) {
+        let cum = 0;
+        const pareto = [];
+        for (const item of terminals) {
+          pareto.push(item);
+          cum += item[1].gross;
+          if (cum / totalTerminalGross >= 0.80) break;
+        }
+        othersGross = totalTerminalGross - pareto.reduce((s,[,v]) => s + v.gross, 0);
+        displayList = pareto;
+      }
+
+      const rows = displayList.map(([username, v], i) => {
         const pct  = totalTerminalGross > 0 ? (v.gross / totalTerminalGross * 100).toFixed(1) : '0.0';
         const barW = (v.gross / maxTerminalGross * 100).toFixed(1);
         const color = tColors[i % tColors.length];
-        const label = v.name !== username ? `${v.name} <span style="color:var(--muted);font-size:10px;">(${username})</span>` : username;
+        const label = isHolding ? username : (v.name !== username ? `${v.name} <span style="color:var(--muted);font-size:10px;">(${username})</span>` : username);
         return `<div class="bank-row">
-          <div class="bank-name" style="width:200px;font-size:11px;">${label}</div>
+          <div class="bank-name" style="width:${isHolding ? '180px' : '200px'};font-size:11px;">${label}</div>
           <div class="bank-bar-wrap">
             <div class="bank-bar-fill" style="width:${barW}%;background:${color};"></div>
           </div>
@@ -1126,10 +1142,21 @@ function render() {
           <div class="bank-amount">${fmt(v.gross)}</div>
         </div>`;
       }).join('');
+
+      const othersRow = (isHolding && othersGross > 0) ? `
+        <div class="bank-row" style="opacity:0.55;">
+          <div class="bank-name" style="width:180px;font-size:11px;font-style:italic;">Otros</div>
+          <div class="bank-bar-wrap">
+            <div class="bank-bar-fill" style="width:${(othersGross/maxTerminalGross*100).toFixed(1)}%;background:rgba(120,130,150,0.4);"></div>
+          </div>
+          <div class="bank-count" style="width:48px;text-align:right;font-size:11px;color:var(--muted);">${(othersGross/totalTerminalGross*100).toFixed(1)}%</div>
+          <div class="bank-amount">${fmt(othersGross)}</div>
+        </div>` : '';
+
+      terminalBarsEl.innerHTML = rows + othersRow;
     }
   }
-
-  const terminalPeriodEl = document.getElementById('terminalPeriodLabel');
+    const terminalPeriodEl = document.getElementById('terminalPeriodLabel');
   if (terminalPeriodEl) {
     if (terminals.length > 0) {
       terminalPeriodEl.textContent = isHolding
