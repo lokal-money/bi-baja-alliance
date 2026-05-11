@@ -306,86 +306,6 @@ tr:hover td{background:rgba(255,255,255,0.025);}
 /* color vars for input date in dark bg */
 input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:pointer;}
 
-/* ── LOGIN OVERLAY ─────────────────────────────────────────── */
-.login-overlay {
-  position: fixed; inset: 0; z-index: 9999;
-  background: #0a0f1a;
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column;
-  transition: opacity .4s ease;
-}
-.login-overlay.hidden {
-  opacity: 0; pointer-events: none;
-}
-.login-card {
-  background: #111827;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
-  padding: 40px 44px;
-  width: 100%; max-width: 380px;
-  display: flex; flex-direction: column; align-items: center; gap: 24px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-}
-.login-logo {
-  width: 52px; height: 52px;
-  background: linear-gradient(135deg, #00c2a8, #00a88f);
-  border-radius: 13px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 800; font-size: 22px; color: #fff;
-  box-shadow: 0 0 28px rgba(0,194,168,0.35);
-}
-.login-title {
-  font-family: 'Barlow', sans-serif;
-  font-weight: 700; font-size: 18px; text-align: center;
-  color: #e2e8f0; line-height: 1.3;
-}
-.login-sub {
-  font-size: 13px; color: #64748b; text-align: center; margin-top: -16px;
-}
-.login-field {
-  width: 100%; display: flex; flex-direction: column; gap: 6px;
-}
-.login-label {
-  font-size: 11px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.8px; color: #64748b;
-}
-.login-input {
-  width: 100%;
-  background: #1a2333;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 9px;
-  padding: 11px 14px;
-  font-family: 'Barlow', sans-serif;
-  font-size: 14px; color: #e2e8f0;
-  outline: none;
-  transition: border-color .2s;
-}
-.login-input:focus { border-color: rgba(0,194,168,0.5); }
-.login-btn {
-  width: 100%;
-  background: linear-gradient(135deg, #00c2a8, #00a88f);
-  border: none; border-radius: 9px;
-  padding: 12px;
-  font-family: 'Barlow', sans-serif;
-  font-size: 14px; font-weight: 700; color: #fff;
-  cursor: pointer;
-  transition: opacity .2s, transform .15s;
-}
-.login-btn:hover { opacity: 0.9; }
-.login-btn:active { transform: scale(0.98); }
-.login-error {
-  font-size: 12.5px; color: #e85d5d;
-  text-align: center; display: none;
-  animation: shake .3s ease;
-}
-.login-error.show { display: block; }
-@keyframes shake {
-  0%,100%{transform:translateX(0);}
-  25%{transform:translateX(-6px);}
-  75%{transform:translateX(6px);}
-}
-
 
 /* ── TERMINAL SELECTOR ── */
 .terminal-wrap {
@@ -430,6 +350,53 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
 }
 .btn-export svg { width:14px; height:14px; }
 
+
+/* ── LOGIN OVERLAY ─────────────────────────────────────────── */
+.login-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #0a0f1a;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  transition: opacity .4s ease;
+}
+.login-overlay.hidden { opacity: 0; pointer-events: none; }
+.login-card {
+  background: #111827; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px; padding: 40px 44px;
+  width: 100%; max-width: 380px;
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+.login-logo {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, #00c2a8, #00a88f);
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; font-size: 22px; color: #fff;
+  box-shadow: 0 0 28px rgba(0,194,168,0.35);
+}
+.login-title { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 18px; text-align: center; color: #e2e8f0; line-height: 1.3; }
+.login-sub { font-size: 13px; color: #64748b; text-align: center; margin-top: -16px; }
+.login-field { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.login-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; }
+.login-input {
+  width: 100%; background: #1a2333; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 9px; padding: 11px 14px; padding-right: 42px;
+  font-family: 'Barlow', sans-serif; font-size: 14px; color: #e2e8f0;
+  outline: none; transition: border-color .2s; box-sizing: border-box;
+}
+.login-input:focus { border-color: rgba(0,194,168,0.4); }
+.login-btn {
+  width: 100%; background: linear-gradient(135deg, #00c2a8, #00a88f);
+  border: none; border-radius: 9px; padding: 12px;
+  font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700; color: #fff;
+  cursor: pointer; transition: opacity .2s;
+}
+.login-btn:hover { opacity: 0.9; }
+.login-error { font-size: 12.5px; color: #e85d5d; text-align: center; display: none; }
+.login-error.show { display: block; }
+
 </style>
 </head>
 <body>
@@ -445,20 +412,20 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
     <div class="login-field">
       <div class="login-label">Contraseña</div>
       <div style="position:relative;width:100%;">
-      <input class="login-input" type="password" id="loginPass"
-             placeholder="••••••••" style="padding-right:42px;width:100%;"
-             onkeydown="if(event.key==='Enter') doLogin()"/>
-      <button onclick="togglePass()" type="button" id="eyeBtn"
-        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
-               background:none;border:none;cursor:pointer;color:var(--muted);
-               font-size:17px;line-height:1;padding:2px;transition:color .2s;"
-        title="Mostrar/ocultar contraseña">👁</button>
-    </div>
+        <input class="login-input" type="password" id="loginPass"
+               placeholder="••••••••"
+               onkeydown="if(event.key==='Enter') doLogin()"/>
+        <button onclick="togglePass()" type="button" id="eyeBtn"
+          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
+                 background:none;border:none;cursor:pointer;color:var(--muted);
+                 font-size:17px;line-height:1;padding:2px;">👁</button>
+      </div>
     </div>
     <div class="login-error" id="loginError">Contraseña incorrecta</div>
     <button class="login-btn" onclick="doLogin()">Ingresar →</button>
   </div>
 </div>
+
 
 
 <div class="status-banner" id="statusBanner"></div>
@@ -1510,54 +1477,6 @@ scheduleRefresh();
 // Attempt background refresh from backend (silently)
 loadData();
 
-// ── AUTH ──────────────────────────────────────────────────────
-// Cambia esta contraseña por la que quieras usar
-const ACCESS_PASSWORD = '{{ACCESS_PASSWORD}}';
-const SESSION_KEY = 'lm_bi_auth';
-
-function togglePass() {
-  const inp = document.getElementById('loginPass');
-  const btn = document.getElementById('eyeBtn');
-  if (inp.type === 'password') {
-    inp.type = 'text';
-    btn.style.color = 'var(--teal)';
-    btn.innerHTML = '🙈';
-  } else {
-    inp.type = 'password';
-    btn.style.color = 'var(--muted)';
-    btn.innerHTML = '👁';
-  }
-}
-
-function doLogin() {
-  const val = document.getElementById('loginPass').value;
-  const err = document.getElementById('loginError');
-  if (val === ACCESS_PASSWORD) {
-    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(e){}
-    const overlay = document.getElementById('loginOverlay');
-    overlay.classList.add('hidden');
-    setTimeout(() => overlay.style.display = 'none', 400);
-    err.classList.remove('show');
-  } else {
-    err.classList.add('show');
-    document.getElementById('loginPass').value = '';
-    document.getElementById('loginPass').focus();
-  }
-}
-
-// Check session on load
-(function() {
-  let authed = false;
-  try { authed = sessionStorage.getItem(SESSION_KEY) === '1'; } catch(e){}
-  if (authed) {
-    const overlay = document.getElementById('loginOverlay');
-    overlay.style.display = 'none';
-  } else {
-    setTimeout(() => {
-      document.getElementById('loginPass').focus();
-    }, 100);
-  }
-})();
 
 
 // ── EXPORT EXCEL ─────────────────────────────────────────────
@@ -1617,6 +1536,63 @@ function exportExcel() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+
+// ── AUTH ──────────────────────────────────────────────────────
+const ACCESS_PASSWORD = '{{ACCESS_PASSWORD}}';
+const SESSION_KEY = 'lm_bi_auth_' + window.location.pathname;
+
+function togglePass() {
+  const inp = document.getElementById('loginPass');
+  const btn = document.getElementById('eyeBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.style.color = 'var(--teal)'; btn.innerHTML = '🙈'; }
+  else { inp.type = 'password'; btn.style.color = 'var(--muted)'; btn.innerHTML = '👁'; }
+}
+
+function doLogin() {
+  const val = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  if (val === ACCESS_PASSWORD) {
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(e) {}
+    const overlay = document.getElementById('loginOverlay');
+    overlay.classList.add('hidden');
+    setTimeout(() => overlay.style.display = 'none', 400);
+    err.classList.remove('show');
+  } else {
+    err.classList.add('show');
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginPass').focus();
+  }
+}
+
+// Auto-login: check URL hash or session
+(function() {
+  const overlay = document.getElementById('loginOverlay');
+  let authed = false;
+
+  // 1. Check if password passed via URL hash (from portal SSO)
+  try {
+    const hash = decodeURIComponent(window.location.hash.slice(1));
+    if (hash && hash === ACCESS_PASSWORD) {
+      authed = true;
+      try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(e) {}
+      // Clean hash from URL without reload
+      history.replaceState(null, '', window.location.pathname);
+    }
+  } catch(e) {}
+
+  // 2. Check session storage
+  if (!authed) {
+    try { authed = sessionStorage.getItem(SESSION_KEY) === '1'; } catch(e) {}
+  }
+
+  if (authed) {
+    overlay.style.display = 'none';
+  } else {
+    setTimeout(() => document.getElementById('loginPass').focus(), 100);
+  }
+})();
+
 
 </script>
 </body>
