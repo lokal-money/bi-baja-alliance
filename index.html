@@ -507,9 +507,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
         </div>
       </div>
       <div class="terminal-wrap">
-        <span class="terminal-label">Usuario</span>
+        <span class="terminal-label" id="selectorLabel">Usuario</span>
         <select class="terminal-select" id="terminalSelect" onchange="applyFilter()">
-          <option value="">Todas</option>
+          <option value="">Todos</option>
         </select>
       </div>
     </div>
@@ -815,7 +815,14 @@ function getFiltered() {
   return RAW.filter(r => {
     if (!r.date || typeof r.date !== 'string') return false;
     if (r.date < from || r.date > to) return false;
-    if (terminal && (r.salesperson_username || r.terminal_serial_number || '') !== terminal) return false;
+    if (terminal) {
+      const isHolding = typeof r.merchant !== 'undefined';
+      if (isHolding) {
+        if ((r.merchant || '').trim() !== terminal) return false;
+      } else {
+        if ((r.salesperson_username || r.terminal_serial_number || '') !== terminal) return false;
+      }
+    }
     return true;
   });
 }
@@ -974,15 +981,27 @@ function render() {
 
   const confirmed = data.filter(r => r.transaction_status === 'CONFIRMED');
 
-  // ── POPULATE TERMINAL SELECTOR ──────────────────────────────
+  // ── POPULATE SELECTOR ──────────────────────────────────────
+  const isHoldingMode = RAW.length > 0 && RAW[0].merchant !== undefined;
   const terminalEl = document.getElementById('terminalSelect');
+  const selectorLabel = document.getElementById('selectorLabel');
   if (terminalEl) {
     const currentVal = terminalEl.value;
-    const allTerminals = [...new Set(
-      RAW.map(r => r.salesperson_username || r.terminal_serial_number || '').filter(t => t && t !== 'nan' && t !== 'None' && t !== 'undefined')
-    )].sort();
-    terminalEl.innerHTML = '<option value="">Todos</option>' +
-      allTerminals.map(t => `<option value="${t}"${t === currentVal ? ' selected' : ''}>${t}</option>`).join('');
+    if (isHoldingMode) {
+      // Holding: filter by merchant
+      if (selectorLabel) selectorLabel.textContent = 'Comercio';
+      const allMerchants = [...new Set(RAW.map(r => (r.merchant || '').trim()).filter(Boolean))].sort();
+      terminalEl.innerHTML = '<option value="">Todos</option>' +
+        allMerchants.map(m => `<option value="${m}"${m === currentVal ? ' selected' : ''}>${m}</option>`).join('');
+    } else {
+      // Individual: filter by user
+      if (selectorLabel) selectorLabel.textContent = 'Usuario';
+      const allUsers = [...new Set(
+        RAW.map(r => r.salesperson_username || r.terminal_serial_number || '').filter(t => t && t !== 'nan' && t !== 'None' && t !== 'undefined')
+      )].sort();
+      terminalEl.innerHTML = '<option value="">Todos</option>' +
+        allUsers.map(t => `<option value="${t}"${t === currentVal ? ' selected' : ''}>${t}</option>`).join('');
+    }
   }
   const cancelled = data.filter(r => r.transaction_status === 'CANCELLED');
   const refunded  = data.filter(r => r.transaction_status === 'REFUNDED');
