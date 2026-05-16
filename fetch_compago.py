@@ -24,7 +24,7 @@ DB_FILE       = "transactions.db"
 
 ORG_IDS = {
     "Alvaro Bazán Estrada":                  "daecdc56-7642-44d6-bd81-4217911eb098",
-    "TORO ALIMENTOS":                        "82dd8ac0-8bf8-4c2e-8dce-f2c407c0410d",
+    "TOROS DE TIJUANA":                      "82dd8ac0-8bf8-4c2e-8dce-f2c407c0410d",
     "CON ACENTO":                            "6f392919-b91f-4ab8-b43b-40687ca2a6f0",
     "Concierge":                             "abe74e1f-3753-41b5-886a-15b47405462c",
     "COORDINADOS":                           "802785dc-48ac-4ae3-92a7-baf32e59ae3a",
@@ -49,7 +49,7 @@ ORG_IDS = {
 
 # ── DISPLAY NAMES (override API name in dashboard header) ────────
 DISPLAY_NAMES = {
-    "TORO ALIMENTOS": "BAJA ALLIANCE",
+    "TOROS DE TIJUANA": "BAJA ALLIANCE",
 }
 
 # ── ARGS ──────────────────────────────────────────────────────────
