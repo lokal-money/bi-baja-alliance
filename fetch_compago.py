@@ -52,6 +52,13 @@ DISPLAY_NAMES = {
     "TOROS DE TIJUANA": "BAJA ALLIANCE",
 }
 
+# ── BUSINESS DAY OFFSET ───────────────────────────────────────────
+# Merchants where the business day starts at a time other than midnight.
+# Value = hours to subtract before extracting date (e.g. 8 = day starts at 8am)
+BUSINESS_DAY_OFFSET = {
+    "TOROS DE TIJUANA": 8,
+}
+
 # ── ARGS ──────────────────────────────────────────────────────────
 merchant   = sys.argv[1] if len(sys.argv) > 1 else "HOGAZA HOGAZA"
 tz_col     = sys.argv[2] if len(sys.argv) > 2 else "UTC-6"
@@ -166,14 +173,19 @@ def transform_record(r):
     network = card.get("networkType", "")
     fee_pct = disb.get("finalFeePercentageForMerchant", 0)
 
+    # Apply business day offset (e.g. TOROS: day starts at 8am not midnight)
+    org_name_raw = (r.get("organization") or {}).get("name", "")
+    biz_offset   = BUSINESS_DAY_OFFSET.get(org_name_raw, 0)
+    dt_biz       = dt_local - timedelta(hours=biz_offset)
+
     return {
         "payment_id":           r.get("id") or r.get("paymentId") or created_utc,
         "created_at_utc":       created_utc,
-        "date_local":           dt_local.strftime("%Y-%m-%d"),
+        "date_local":           dt_biz.strftime("%Y-%m-%d"),
         "time_local":           dt_local.strftime("%H:%M:%S"),
         "hour_local":           dt_local.hour,
-        "dow_local":            dt_local.strftime("%A"),
-        "org_name":             (r.get("organization") or {}).get("name", ""),
+        "dow_local":            dt_biz.strftime("%A"),
+        "org_name":             org_name_raw,
         "status":               r.get("status", ""),
         "amount":               float(r.get("amount", 0)),
         "fee_amount":           float(disb.get("feeAmount", 0)),
