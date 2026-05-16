@@ -11,31 +11,22 @@ jobs:
     timeout-minutes: 15
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
     permissions:
       contents: write
-
     steps:
-      - name: Checkout repositorio
-        uses: actions/checkout@v4.2.2
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5.6.0
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
         with:
           python-version: "3.11"
-
-      - name: Instalar dependencias
-        run: pip install urllib3
-
+      - run: pip install urllib3
       - name: Generar dashboard desde Compago API
         timeout-minutes: 10
         env:
           COMPAGO_API_KEY: ${{ secrets.COMPAGO_API_KEY }}
-        run: python fetch_compago.py "TORO ALIMENTOS" "UTC-7" "${{ secrets.DASHBOARD_PASSWORD }}"
-
+        run: python fetch_compago.py "TOROS DE TIJUANA" "UTC-7" "${{ secrets.DASHBOARD_PASSWORD }}"
       - name: Commit actualizado
         run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html transactions.db
           git diff --cached --quiet || git commit -m "Dashboard actualizado $(date +'%Y-%m-%d %H:%M UTC')"
