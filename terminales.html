@@ -197,7 +197,7 @@ main{padding:1.5rem;max-width:1440px;margin:0 auto}
 <script>
 const ACCESS_PASSWORD = "BA#2026";
 const SHEET_ID = "1pGxvTKanguPsOG8qy0RBHcv2t9TB9Z3COa8XEVjsNRk";
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjsi8y8Fiw0qAe3GYaOexzVue-LuWySpw4P8nxMIS7WIrRPTRhxp65GdTlki8n3etqpy8J-wlcS6ft/pub?output=csv';
 
 const SEED_DATA = [
   {serial:"NCCA05139530",pos:"BA08 N950-39530",model:"N950",tipo:"IMPRIME",local:"Barras",negocio:"TORO ALIMENTOS",resp:"",int_amex:true,app:"1.0.42",tms:"https://toms.newlandnpt.com/operator-next/#/TMS/terminal/NCCA05139530",qr:"iVBORw0KGgoAAAANSUhEUgAAAPYAAAD2AQAAAADNaUdlAAACZ0lEQVR4nO2ZzWkjQRBGX7sHdKwBB7CJLPRk4JCMQ9oMWqE4g5qjoYZvD9U2e7Et2IOmwXWQBn2Xp1L9q4iv7Hj4UoYf/f905ADVm6QqBU3eqvJnaXFvvhv0Jgk4Sol9w14WewmokvwUfN/qpWxwXaCsAG9lKyvsZTkJ3y269TAF1/q6XRy9bifj+07fN/ZtoR0rYVqsn4zvM1sAwWIqXAX40/H4h/0JE/v9+W7Qr6UU9q16W/ZtgcvrM3CUUtZT8H1tGtbDupzqLaxj49PT10/kLQBadSSFCVNVl7cZ6j9yMIVJnp2r59cJGjaD/6WgQcNEPtCCVr1Vn8P/csJ6WK9O0KpUHazPET9JC5FRJEX6X11T+F8dU6S3TVXjWZnO9+a7zf+tfmTB+0QqZ4748cboAj1DqL63g1n4xwqQkWPjNcvRBPzqkgKkXtUlyVuOo3WO+O/VG9aB6oQJGPPDHPVHAdlzR9vNpjBN/ZScKmE9UziniJQm4HciUa0HjMy1nlv8DPwtAOvVWx4fwhQQNkn8OMmcCVulKkHLE8QE/FJYH9Om9aDlFpAXoQn4vUk9xgmrYz0n/2nmHyesj7Cx912SVqfZv8bOVUcjU8bP2IXvzXeTvj8vpreVt5WAUkp9LWVtx69+Dr6vbBwaPFsw0P694k7g/72UUha45BRk/Sjl4izwVrYT8H1jysu5I2ncorOKzlE/Hxj3Z46yVWcBaAvXsnKU8/v/Q28Xv2I99hJ7wXpVv/iJ+D6xZbzby+9HfXykfdX+dAa+W+NfClM2so+MmKR/AeQKllMQ2Xxtiv2r/Px/elf9L+mfG0728/RcAAAAAElFTkSuQmCC"},
@@ -429,17 +429,11 @@ async function refreshData(){
   btn.textContent='↻ Actualizando…';
   setSyncState('loading');
   try{
-    const proxies=[
-      'https://corsproxy.io/?'+encodeURIComponent(SHEET_CSV_URL),
-      'https://api.allorigins.win/raw?url='+encodeURIComponent(SHEET_CSV_URL),
-    ];
     let text=null;
-    for(const url of proxies){
-      try{
-        const r=await fetch(url,{cache:'no-store'});
-        if(r.ok){text=await r.text();break;}
-      }catch(e){}
-    }
+    try{
+      const r=await fetch(SHEET_CSV_URL,{cache:'no-store'});
+      if(r.ok) text=await r.text();
+    }catch(e){}
     if(!text) throw new Error('No se pudo conectar al proxy');
     const rows=parseCSV(text);
     if(!rows.length) throw new Error('La hoja devolvió datos vacíos');
